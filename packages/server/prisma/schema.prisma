@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  email     String     @unique
+  name      String?
+  password  String
+  isFrozen  Boolean    @default(false)
+  isAdmin   Boolean    @default(false)
+  lists     List[]
+  roles     UserRole[]
+}
+
+model Role {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
+  module      String
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  roles       RolePermission[]
+}
+
+model UserRole {
+  userId Int
+  roleId Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+}
+
+model RolePermission {
+  roleId       Int
+  permissionId Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+}
+
+model List {
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  title       String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  user        User      @relation(fields: [userId], references: [id])
+  userId      Int
+  tasks       Task[]
+}
+
+model Task {
+  id          Int         @id @default(autoincrement())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  type        TaskType?   @default(INITIAL)
+  title       String
+  description String?
+  completed   Boolean     @default(false)
+  dueDate     DateTime?
+  repeat      RepeatType?
+  list        List        @relation(fields: [listId], references: [id])
+  listId      Int
+  tags        TaskTags[]
+}
+
+model Tag {
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  name      String     @unique
+  tasks     TaskTags[]
+}
+
+model TaskTags {
+  taskId Int
+  tagId  Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task Task @relation(fields: [taskId], references: [id])
+  tag  Tag  @relation(fields: [tagId], references: [id])
+
+  @@id([taskId, tagId])
+}
+
+enum RepeatType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  NONE
+}
+
+enum TaskType {
+  INITIAL
+  HABIT
+}
