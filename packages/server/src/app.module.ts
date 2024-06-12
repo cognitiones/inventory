@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './user/user.module';
-import { RedisModule } from './redis/redis.module';
+// import { RedisModule } from './redis/redis.module';
 import { ListModule } from './list/list.module';
 import { TaskModule } from './task/task.module';
 import { TagModule } from './tag/tag.module';
@@ -17,12 +17,14 @@ import { LoginGuard } from './login.guard';
 import { PermissionGuard } from './permission.guard';
 import { ScheduleModule } from "@nestjs/schedule";
 
+import * as path from 'path'
+
 @Module({
   imports: [
     PrismaModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '../.env'
+      envFilePath: path.join(__dirname, '.env')
     }),
     JwtModule.registerAsync({
       global: true,
@@ -37,7 +39,7 @@ import { ScheduleModule } from "@nestjs/schedule";
       inject: [ConfigService]
     }),
     ScheduleModule.forRoot(),
-    UserModule, RedisModule, ListModule, TaskModule, TagModule, RoleModule, PermissionModule
+    UserModule, ListModule, TaskModule, TagModule, RoleModule, PermissionModule
   ],
   controllers: [AppController],
   providers: [

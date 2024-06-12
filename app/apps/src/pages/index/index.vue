@@ -11,14 +11,26 @@
   <!-- TODO: popup 弹层取消时 加一个过渡动画 -->
   <view :style="{ paddingTop: safeAreaInsets?.top + 11 + 'px' }" class="title">今天</view>
   <view class="list">
-    <view class="list-items" v-for="(item, index) in list" :key="index">
-      <view class="list-header">
-        <view>{{ item.title }}</view>
-        <view>{{ item.data.length }}</view>
-      </view>
-      <view class="list-content">
-        <view class="content-items" v-for="(it, ind) in item.data" @click="handleDetail(it, item)">
-          <view :class="it.completed ? 'completed' : ''">{{ it.title }}</view>
+    <view>
+      <view class="list-items" v-for="(item, index) in list" :key="index">
+        <view class="list-header">
+          <view>{{ item.title }}</view>
+          <view>{{ item.data.length }}</view>
+        </view>
+        <view class="list-content">
+          <view class="content-items" v-for="(it, ind) in item.data">
+            <wd-swipe-action custom-class="swipeClass">
+              <view :class="it.completed ? 'completed' : ''" class="h-7 mr-1 flex items-center"
+                @click="handleDetail(it, item)">{{ it.title }}</view>
+              <template #right>
+                <view class="action">
+                  <view @click="handleDelete(it)" class="button" style="background-color: blue">操作1</view>
+                  <!-- <view class="button" style="background-color:aqua">操作2</view>
+                  <view class="button" style="background-color:aquamarine">操作3</view> -->
+                </view>
+              </template>
+            </wd-swipe-action>
+          </view>
         </view>
       </view>
     </view>
@@ -34,13 +46,13 @@
   <TaskDetail ref="TaskDetailRef" @getTodayList="run"></TaskDetail>
 
   <!-- insert popup -->
-  <TaskInsert v-if="insertDialogState" ref="TaskInsertRef" @getTodayList="run" @close="insertDialogState = false">
+  <TaskInsert v-if="insertDialogState" ref="TaskInsertRef" @change="run" @close="insertDialogState = false">
   </TaskInsert>
 </template>
 
 <script lang="ts" setup>
 import { TodayItem, TaskItem } from "./types/index";
-import { getUserTasksForToday } from "@/service/task";
+import { getUserTasksForToday, deleteTask } from "@/service/task";
 import TaskDetail from "./components/taskDetail.vue";
 import TaskInsert from "./components/taskInsert.vue";
 
@@ -58,7 +70,15 @@ const handleInsert = () => {
   insertDialogState.value = true
 }
 
+const handleDelete = async (it: TaskItem) => {
+  const res = await deleteTask({ taskId: it.id })
+  if (res.data) {
+    run()
+  }
+}
+
 const { loading, error, data, run } = useRequest<TaskItem[]>(() => getUserTasksForToday({ userId: 1 }))
+
 watchEffect(() => {
   if (!loading.value && data.value) {
     getTodayList(data.value)
@@ -173,5 +193,23 @@ $scale-factor: 0.85;
   100% {
     transform: scale(1);
   }
+}
+
+.action {
+  height: 100%;
+  display: flex;
+}
+
+.button {
+  padding: 0 20rpx;
+  height: 100%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swipeClass {
+  right: -1rpx
 }
 </style>

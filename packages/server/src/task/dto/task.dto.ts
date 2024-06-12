@@ -84,3 +84,22 @@ export class CompleteTaskDto {
     })
     completed: boolean
 }
+
+export class DeleteTaskDto {
+    @IsNotEmpty({
+        message: "taskId 不能为空"
+    })
+    @Type(() => Number)
+    taskId: number
+}
+
+export class GetUserTasksForMonthDto {
+    @IsNotEmpty({
+        message: "userId 不能为空"
+    })
+    @Type(() => Number)
+    userId: number
+
+    @Type(() => Number)
+    month?: number
+}

@@ -93,6 +93,7 @@
     "@dcloudio/uni-mp-weixin": "3.0.0-4010420240430001",
     "@dcloudio/uni-mp-xhs": "3.0.0-4010420240430001",
     "@dcloudio/uni-quickapp-webview": "3.0.0-4010420240430001",
+    "date-fns": "^3.6.0",
     "dayjs": "1.11.10",
     "pinia": "2.0.36",
     "pinia-plugin-persistedstate": "3.2.1",

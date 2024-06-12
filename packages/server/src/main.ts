@@ -3,6 +3,7 @@ import { ValidationPipe } from "@nestjs/common";
 import { FormatResponseInterceptor } from "./format-response.interceptor";
 import { CustomExceptionFilter } from "./custom-exception.filter";
 import { AppModule } from './app.module';
+import { ConfigService } from '@nestjs/config';
 
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
@@ -34,6 +35,8 @@ async function bootstrap() {
   SwaggerModule.setup('api-doc', app, document)
 
   app.enableCors()
-  await app.listen(3000);
+
+  const configService = app.get(ConfigService);
+  await app.listen(configService.get('nest_server_port'));
 }
 bootstrap();

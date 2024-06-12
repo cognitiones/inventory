@@ -7,17 +7,77 @@
 </route>
 
 <template>
-  <view class="bg-white overflow-hidden pt-2 px-4">
+  <view class=" overflow-hidden pt-2 px-4">
 
-    <view class="index">
-      <wu-calendar type="week" :itemHeight="50" :insert="true" :fold="true"></wu-calendar>
+    <view class="calendar">
+      <wu-calendar @change="calendarChange" :selected="selected" type="week" :itemHeight="50" :insert="true"
+        :fold="true"></wu-calendar>
+    </view>
+    <view v-if="list.length != 0" class="list bg-white mt-4 box-border px-3 py-3">
+      <view class="item h-6 flex items-center my-2 first:mt-0 last:mb-0" v-for="(item, index) in list" :key="index">
+        {{ item.title }}
+      </view>
     </view>
   </view>
 
 </template>
 <script lang="ts" setup>
 // 获取屏幕边界到安全区域距离
-const { safeAreaInsets } = uni.getSystemInfoSync()
-</script>
+import { TaskItem } from "../index/types/index";
+import { getUserTasksForToday, getUserTasksForMonth, MonthTask } from "@/service/task";
+import { startOfToday } from "@/utils/days";
 
+const list = ref<TaskItem[]>([])
+const selected = ref([])
+const { loading, error, data: monthTasks, run: getMonthTasks } = useRequest<MonthTask[]>(() => getUserTasksForMonth({ userId: 1 }))
+
+const calendarChange = (e) => {
+  let fulldate = e.fulldate
+
+  const monthTask = monthTasks.value.find((monthTask: MonthTask) => {
+    if (monthTask.date === fulldate) {
+      return monthTask.data
+    }
+  })
+
+  list.value = monthTask ? monthTask.data : []
+  
+}
+
+const getCalendarData = (data: MonthTask[]) => {
+  let array = []
+  const today = startOfToday()
+
+  data.forEach((monthTask: MonthTask) => {
+    if (monthTask.date === today) {
+      list.value = monthTask.data
+    }
+
+    let obj = {
+      date: monthTask.date,
+      badgeColor: 'red',
+      badgePosition: 'bottom-center',
+      badge: true
+    }
+
+    array.push(obj)
+  })
+
+  selected.value = array
+}
+watchEffect(() => {
+  if (!loading.value && monthTasks.value) {
+    console.log(monthTasks.value);
+    getCalendarData(monthTasks.value)
+  }
+})
+</script>
+<!-- 设置page属性 不能带有 scoped 标签，否则 app 不生效 -->
+<style>
+page {
+  background-color: #f3f4f8;
+  padding: 0 30rpx;
+  box-sizing: border-box;
+}
+</style>
 <style lang="scss" scoped></style>

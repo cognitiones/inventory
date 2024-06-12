@@ -12,3 +12,10 @@ npx prisma generate
 
 ### 3、验证更新
 npx prisma studio
+
+
+### 疑问
+
+1、显式/隐式关联表
+2、级联/关联删除
+3、数据库存时间 存 DateTime 还是 string (后者 2024/2/24 12:00:00 这种)

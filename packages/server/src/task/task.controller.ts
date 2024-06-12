@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Query, SetMetadata } from '@nestjs/common';
 import { TaskService } from './task.service';
-import { AddTaskDto, GetAllDto, GetTaskAndTagDto, GetUserTasksForTodayDto, CompleteTaskDto } from "./dto/task.dto";
+import { AddTaskDto, GetAllDto, GetTaskAndTagDto, GetUserTasksForTodayDto, CompleteTaskDto, DeleteTaskDto, GetUserTasksForMonthDto } from "./dto/task.dto";
 import { ApiTags, ApiBody, ApiQuery, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
 
 @ApiTags("任务模块")
@@ -33,5 +33,15 @@ export class TaskController {
   @Post('/completeTask')
   async completeTask(@Body() data: CompleteTaskDto) {
     return await this.taskService.completeTask(data)
+  }
+
+  @Post('/deleteTask')
+  async deleteTask(@Body() data: DeleteTaskDto) {
+    return await this.taskService.deleteTask(data)
+  }
+
+  @Get('/getUserTasksForMonth')
+  async getUserTasksForMonth(@Query() data: GetUserTasksForMonthDto) {
+    return await this.taskService.getUserTasksForMonth(data) 
   }
 }

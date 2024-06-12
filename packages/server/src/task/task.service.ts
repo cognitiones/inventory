@@ -1,9 +1,10 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
-import { AddTaskDto, GetAllDto, GetTaskAndTagDto, GetUserTasksForTodayDto, CompleteTaskDto } from "./dto/task.dto";
+import { AddTaskDto, DeleteTaskDto, GetAllDto, GetTaskAndTagDto, GetUserTasksForTodayDto, CompleteTaskDto, GetUserTasksForMonthDto } from "./dto/task.dto";
 import { Cron } from '@nestjs/schedule';
-import { startOfDay, endOfDay } from 'date-fns';
+import { startOfDay, endOfDay, startOfMonth, endOfMonth } from 'date-fns';
+
 @Injectable()
 export class TaskService {
     private readonly logger = new Logger(TaskService.name);
@@ -29,6 +30,58 @@ export class TaskService {
                 id: true,
             }
         })
+    }
+
+    async getUserTasksForMonth(data: GetUserTasksForMonthDto) {
+        let startDate, endDate
+        if(data.month){
+            const currentDate = new Date();
+            currentDate.setMonth(data.month - 1); // 月份从0开始，1对应1月，2对应2月，以此类推
+            currentDate.setDate(1); // 将日期设置为当月的第一天
+
+            startDate = startOfMonth(currentDate);
+            endDate = endOfMonth(currentDate);
+
+            console.log(6, startDate,endDate);
+        }else{
+             startDate = startOfMonth(new Date());
+             endDate = endOfMonth(new Date());
+        }
+
+        //获取这个月份 
+      
+        
+        //获取这个月份的所有任务
+        const tasks = await this.prisma.task.findMany({
+            where: {
+                list: {
+                    userId: data.userId,
+                },
+                dueDate: {
+                    gte: startDate,
+                    lte: endDate,
+                },
+            },
+            orderBy: {
+                createdAt: 'asc',
+            },
+        });
+        
+        // 按天排列任务
+        const tasksByDay = Object.values(tasks.reduce((acc, task) => {
+            const day = task.dueDate.getDate();
+            let month = task.dueDate.getMonth() + 1;
+            const year = task.dueDate.getFullYear();
+            const time = `${year}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`
+
+            if (!acc[time]) {
+                acc[time] = { date: time, data: [] };
+            }
+            acc[time].data.push(task);
+            return acc;
+        }, {}));
+
+        return tasksByDay;
     }
 
     async getUserTasksForToday(data: GetUserTasksForTodayDto) {
@@ -139,5 +192,27 @@ export class TaskService {
                 createdAt: 'desc'
             }
         })
+    }
+
+    async deleteTask(data: DeleteTaskDto) {
+        // 使用 Prisma 事务
+        return await this.prisma.$transaction(async (prisma) => {
+            // 首先删除 TaskTags 中的相关记录
+            await prisma.taskTags.deleteMany({
+                where: {
+                    taskId: data.taskId
+                }
+            });
+
+            // 然后删除 Task
+            return await prisma.task.delete({
+                where: {
+                    id: data.taskId
+                },
+                select: {
+                    id: true
+                }
+            });
+        });
     }
 }
