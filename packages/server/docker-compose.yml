@@ -1,18 +1,5 @@
 version: '3.8'
 services:
-  nest-app:
-    build:
-      context: ./
-      dockerfile: ./Dockerfile
-    depends_on:
-      mysql-container:
-        condition: service_healthy  # 增加健康检查
-    ports:
-      - 3005:3005
-    networks:
-      - common-network
-    environment:
-      DATABASE_URL: mysql://root:chen@mysql-container:3306/inventory
   mysql-container:
     image: mysql
     volumes:
@@ -23,13 +10,27 @@ services:
       MYSQL_ROOT_PASSWORD: chen
     networks:
       - common-network
-    ports: 
+    ports:
       - 3306:3306
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
       interval: 10s
       timeout: 5s
       retries: 3
+
+  nest-app:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    depends_on:
+      mysql-container:
+        condition: service_healthy # 增加健康检查
+    ports:
+      - 3005:3005
+    networks:
+      - common-network
+    environment:
+      DATABASE_URL: mysql://root:chen@mysql-container:3306/inventory
 networks:
   common-network:
     driver: bridge
