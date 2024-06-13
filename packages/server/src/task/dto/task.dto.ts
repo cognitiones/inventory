@@ -3,15 +3,10 @@ import { Type } from 'class-transformer';
 import { ApiProperty } from "@nestjs/swagger";
 
 export class AddTaskDto {
-    @ApiProperty({
-        required: false
-    })
     tagName?: string
 
-    @IsNotEmpty({
-        message: "listId 不能为空"
-    })
-    listId: number
+    @Type(() => Number)
+    listId?: number
 
     @IsNotEmpty({
         message: "标题 不能为空"

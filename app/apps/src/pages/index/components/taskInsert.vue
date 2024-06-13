@@ -22,7 +22,7 @@ import { addTask, AddTaskDto } from "@/service/task";
 const emit = defineEmits(['close', 'change'])
 const show = ref(true)
 const form = ref<AddTaskDto>({
-    listId: 1,
+    // listId: 1,
     title: "",
     description: "",
     repeat: 'NONE',

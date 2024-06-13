@@ -128,7 +128,8 @@ export class TaskService {
     }
 
     async addTask(data: AddTaskDto) {
-        const { listId, tagName, ...taskData } = data;
+        let { listId, tagName, ...taskData } = data;
+
         let task: Prisma.TaskCreateInput = null
         if (tagName) {
             task = {

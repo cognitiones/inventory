@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { Prisma } from "@prisma/client";
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GetUserAllDto, LoginDto, GetUserPermissionsDto } from "./dto/user.dto";
+import { ListService } from "src/list/list.service";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { md5 } from "src/utils";
@@ -14,6 +15,8 @@ export class UserService {
     private configService: ConfigService
     @Inject(JwtService)
     private jwtService: JwtService
+    @Inject(ListService)
+    private listService: ListService
 
     async login(data: LoginDto) {
         const user = await this.getUser({ email: data.email })
@@ -72,7 +75,13 @@ export class UserService {
         return await this.prisma.user.create({
             data: {
                 ...data,
-                password: md5(data.password)
+                password: md5(data.password),
+                lists: {
+                    create: {
+                        title: "收集箱",
+                        description: "收集箱",
+                    }
+                }
             },
             select: {
                 id: true

@@ -22,7 +22,7 @@ export interface DeleteTaskDto {
 
 export interface AddTaskDto {
     tagName?: string
-    listId: number
+    // listId: number
     title: string
     description?: string
     completed: boolean
