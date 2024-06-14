@@ -85,7 +85,6 @@
     "useRequest": true,
     "useSlots": true,
     "useUpload": true,
-    "useUpload2": true,
     "watch": true,
     "watchEffect": true,
     "watchPostEffect": true,

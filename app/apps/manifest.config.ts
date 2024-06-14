@@ -71,7 +71,13 @@ export default defineManifestConfig({
       /* ios打包配置 */
       ios: {},
       /* SDK配置 */
-      sdkConfigs: {},
+      sdkConfigs: {
+        push: {
+          unipush: {
+            version: "2"
+          }
+        }
+      },
       /* 图标配置 */
       icons: {
         android: {
@@ -104,7 +110,7 @@ export default defineManifestConfig({
             'spotlight@3x': 'static/app/icons/120x120.png',
           },
         },
-      },
+      }
     },
   },
   /* 快应用特有相关 */
