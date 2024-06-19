@@ -2,12 +2,19 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 import { AddTaskDto, DeleteTaskDto, GetAllDto, GetTaskAndTagDto, GetUserTasksForTodayDto, CompleteTaskDto, GetUserTasksForMonthDto } from "./dto/task.dto";
+import { HttpService } from "@nestjs/axios";
+import { ConfigService } from '@nestjs/config';
+
 import { Cron } from '@nestjs/schedule';
 import { startOfDay, endOfDay, startOfMonth, endOfMonth } from 'date-fns';
 
 @Injectable()
 export class TaskService {
-    private readonly logger = new Logger(TaskService.name);
+    @Inject(HttpService)
+    private readonly httpService: HttpService
+
+    @Inject(ConfigService)
+    private configService: ConfigService
 
     @Inject(PrismaService)
     private prisma: PrismaService
@@ -16,6 +23,31 @@ export class TaskService {
     // handleCron(){
     //     this.logger.debug("Called when the current second is 45")
     // }
+    async pushTask() {
+        const uniCloud_url = this.configService.get('uniCloud_url')
+
+        let data = {
+            "clientid": "d369630b2b0a3b5ee0baf8daeced7c98",
+            "title": "第一条 标题",
+            "content": "第一条内容",
+            // "payload": {
+            //     "text": "第一条 payload - text"
+            // }
+        }
+        function toQueryString(data) {
+            return '?' + new URLSearchParams(data).toString();
+        }
+        let pushData = toQueryString(data)
+
+        this.httpService.post(`${uniCloud_url}/uniPush` + pushData,).subscribe(
+            res => {
+                console.log('?', res.data);
+            },
+            error => {
+                console.error(error);
+            }
+        );
+    }
 
     //完成任务
     async completeTask(data: CompleteTaskDto) {
@@ -34,7 +66,7 @@ export class TaskService {
 
     async getUserTasksForMonth(data: GetUserTasksForMonthDto) {
         let startDate, endDate
-        if(data.month){
+        if (data.month) {
             const currentDate = new Date();
             currentDate.setMonth(data.month - 1); // 月份从0开始，1对应1月，2对应2月，以此类推
             currentDate.setDate(1); // 将日期设置为当月的第一天
@@ -42,15 +74,15 @@ export class TaskService {
             startDate = startOfMonth(currentDate);
             endDate = endOfMonth(currentDate);
 
-            console.log(6, startDate,endDate);
-        }else{
-             startDate = startOfMonth(new Date());
-             endDate = endOfMonth(new Date());
+            console.log(6, startDate, endDate);
+        } else {
+            startDate = startOfMonth(new Date());
+            endDate = endOfMonth(new Date());
         }
 
         //获取这个月份 
-      
-        
+
+
         //获取这个月份的所有任务
         const tasks = await this.prisma.task.findMany({
             where: {
@@ -66,7 +98,7 @@ export class TaskService {
                 createdAt: 'asc',
             },
         });
-        
+
         // 按天排列任务
         const tasksByDay = Object.values(tasks.reduce((acc, task) => {
             const day = task.dueDate.getDate();

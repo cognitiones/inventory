@@ -44,4 +44,9 @@ export class TaskController {
   async getUserTasksForMonth(@Query() data: GetUserTasksForMonthDto) {
     return await this.taskService.getUserTasksForMonth(data) 
   }
+
+  @Get('/pushTask')
+  async pushTask(){
+    return await this.taskService.pushTask()
+  }
 }
