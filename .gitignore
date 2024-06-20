@@ -27,5 +27,5 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 # dotenv environment variable files
-# app/**/*.env
-.env
+app/**/*.env
+# .env
