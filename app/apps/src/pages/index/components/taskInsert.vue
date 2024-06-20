@@ -16,16 +16,17 @@
 </template>
 
 <script lang="ts" setup>
-import { endOfToday } from "@/utils/days";
+import { endOfToday, formatDate } from "@/utils/days";
 import { addTask, AddTaskDto } from "@/service/task";
 
 const emit = defineEmits(['close', 'change'])
 const show = ref(true)
 const form = ref<AddTaskDto>({
-    // listId: 1,
+    listId: 1,
     title: "",
     description: "",
     repeat: 'NONE',
+    reminderDate: formatDate(new Date('2024-6-19 15:30:00')),
     dueDate: endOfToday(),
     completed: false
 })

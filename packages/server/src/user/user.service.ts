@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { Prisma } from "@prisma/client";
 import { PrismaService } from 'src/prisma/prisma.service';
-import { GetUserAllDto, LoginDto, GetUserPermissionsDto } from "./dto/user.dto";
+import { GetUserAllDto, LoginDto, GetUserPermissionsDto, UpdateUserDto } from "./dto/user.dto";
 import { ListService } from "src/list/list.service";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
@@ -27,7 +27,7 @@ export class UserService {
         if (!(user.password === md5(data.password))) {
             throw new HttpException("密码错误", HttpStatus.BAD_REQUEST)
         }
-        
+
         const permissions = await this.getUserPermissions({ userId: user.id })
 
         const accessToken = this.jwtService.sign({
@@ -128,5 +128,36 @@ export class UserService {
         const permissions = user.roles.flatMap(role => role.role.permissions.map(permission => permission.permission));
 
         return permissions
+    }
+
+    async updateUser(data: UpdateUserDto) {
+        const { apps, id, ...userData } = data
+
+        if (apps) {
+            return await this.prisma.user.update({
+                where: {
+                    id: id,
+                },
+                data: {
+                    ...userData,
+                    apps: {
+                        connectOrCreate: {
+                            where: { id: apps.id || 0 },
+                            create: { clientid: apps.clientid }
+                        }
+                    }
+                },
+                include: {
+                    apps: true
+                }
+            })
+        } else {
+            return await this.prisma.user.update({
+                where: {
+                    id: id
+                },
+                data: userData
+            })
+        }
     }
 }

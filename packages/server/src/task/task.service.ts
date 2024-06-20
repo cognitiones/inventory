@@ -5,8 +5,9 @@ import { AddTaskDto, DeleteTaskDto, GetAllDto, GetTaskAndTagDto, GetUserTasksFor
 import { HttpService } from "@nestjs/axios";
 import { ConfigService } from '@nestjs/config';
 
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { startOfDay, endOfDay, startOfMonth, endOfMonth } from 'date-fns';
+import { TestingModule } from '@nestjs/testing';
 
 @Injectable()
 export class TaskService {
@@ -19,17 +20,54 @@ export class TaskService {
     @Inject(PrismaService)
     private prisma: PrismaService
 
-    // @Cron('* * * * * *')
-    // handleCron(){
-    //     this.logger.debug("Called when the current second is 45")
-    // }
-    async pushTask() {
+    @Cron(CronExpression.EVERY_MINUTE)
+    async getPushTasks() {
+        const now = new Date()
+        const tasks = await this.prisma.task.findMany({
+            where: {
+                reminderDate: {
+                    lte: now
+                },
+                completed: false,
+                isReminded: false
+            },
+            include: {
+                list: {
+                    select: {
+                        user: {
+                            select: {
+                                apps: true
+                            }
+                        }
+                    }
+                }
+            }
+        })
+
+        // console.log('tasks', tasks);
+
+        for (const task of tasks) {
+            await this.pushTask(task);
+            // this.logger.debug(`Task with id ${task.id} is due and notification has been sent.`);
+        }
+    }
+
+    async pushTask(task) {
+        
+        const clientid = task?.list?.user?.apps.clientid
+        const title = task.title
+        const content = task.description
+
+        if (!clientid) {
+            return "无设备id"
+        }
+        // return
         const uniCloud_url = this.configService.get('uniCloud_url')
 
         let data = {
-            "clientid": "d369630b2b0a3b5ee0baf8daeced7c98",
-            "title": "第一条 标题",
-            "content": "第一条内容",
+            "clientid": clientid,
+            "title": title,
+            "content": content || title,
             // "payload": {
             //     "text": "第一条 payload - text"
             // }
@@ -38,8 +76,9 @@ export class TaskService {
             return '?' + new URLSearchParams(data).toString();
         }
         let pushData = toQueryString(data)
+        console.log(pushData, 'push123');
 
-        this.httpService.post(`${uniCloud_url}/uniPush` + pushData,).subscribe(
+        this.httpService.get(`${uniCloud_url}/uniPush` + pushData).subscribe(
             res => {
                 console.log('?', res.data);
             },

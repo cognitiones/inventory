@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, HttpStatus, Query } from '@nestjs/common';
 import { UserService } from './user.service';
-import { RegisterUserDto, GetUserAllDto, LoginDto, GetUserPermissionsDto } from "./dto/user.dto";
+import { RegisterUserDto, GetUserAllDto, LoginDto, GetUserPermissionsDto, UpdateUserDto } from "./dto/user.dto";
 import { getAllVo, RegisterUserVo } from "./vo/user.vo";
 import { ApiTags, ApiBody, ApiQuery, ApiResponse, ApiOperation} from "@nestjs/swagger";
 
@@ -31,5 +31,10 @@ export class UserController {
   @Get('/getUserPermissions')
   async getUserPermissions(@Query() data: GetUserPermissionsDto){
     return await this.userService.getUserPermissions(data)
+  }
+
+  @Post('/updateUser')
+  async updateUser(@Body() data: UpdateUserDto){
+    return await this.userService.updateUser(data)
   }
 }

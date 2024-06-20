@@ -22,10 +22,11 @@ export interface DeleteTaskDto {
 
 export interface AddTaskDto {
     tagName?: string
-    // listId: number
+    listId: number
     title: string
     description?: string
     completed: boolean
+    reminderDate?: string
     dueDate?: string
     repeat: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'NONE'
 }

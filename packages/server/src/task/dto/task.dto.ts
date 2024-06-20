@@ -22,6 +22,8 @@ export class AddTaskDto {
     @IsBoolean()
     completed: boolean
 
+    reminderDate?: string
+
     dueDate?: string
 
     @ApiProperty({

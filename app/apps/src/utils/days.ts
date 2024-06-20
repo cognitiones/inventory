@@ -1,7 +1,8 @@
 import { format, endOfDay, formatISO } from 'date-fns';
 
 export function formatDate(date: Date): string {
-    return format(date, 'yyyy-MM-dd HH:mm:ss');
+    let time = format(date, 'yyyy-MM-dd HH:mm:ss');
+    return formatISO(time, { representation: 'complete' });
 }
 
 export function endOfToday(): string {
