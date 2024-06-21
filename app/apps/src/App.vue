@@ -20,10 +20,10 @@
 			})
 		})
 		// // uni-app客户端获取push客户端标记
-		plus.push.getClientInfoAsync((info) => {
-			console.log('cid:', info)
-			uni.setStorageSync('cid', info.clientid)
-		}, (e) => { })
+		// plus.push.getClientInfoAsync((info) => {
+		// 	console.log('cid:', info)
+		// 	uni.setStorageSync('cid', info.clientid)
+		// }, (e) => { })
 	})
 	onShow(() => {
 		// console.log('App Show')

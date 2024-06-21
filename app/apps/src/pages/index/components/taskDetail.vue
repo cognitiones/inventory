@@ -38,13 +38,7 @@ const handleShow = (taskItem: TaskItem, listItem: TodayItem) => {
 
 const handleChange = async (task: TaskItem) => {
     const res = await completeTask({ taskId: task.id, completed: task.completed })
-    if (res.data.id) {
-        // uni.showToast({
-        //     title: "操作成功",
-        //     icon: "none"
-        // })
-        emit('getTodayList')
-    }
+    emit('getTodayList')
 }
 
 const handleClose = () => {

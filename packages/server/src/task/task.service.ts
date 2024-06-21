@@ -1,13 +1,24 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Prisma } from "@prisma/client";
+import { Prisma, Task } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 import { AddTaskDto, DeleteTaskDto, GetAllDto, GetTaskAndTagDto, GetUserTasksForTodayDto, CompleteTaskDto, GetUserTasksForMonthDto } from "./dto/task.dto";
 import { HttpService } from "@nestjs/axios";
 import { ConfigService } from '@nestjs/config';
-
+import { catchError, firstValueFrom } from 'rxjs';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { startOfDay, endOfDay, startOfMonth, endOfMonth } from 'date-fns';
 import { TestingModule } from '@nestjs/testing';
+import { AxiosError } from "axios";
+
+interface ExtendedTask extends Task {
+    list?: {
+        user?: {
+            apps?: {
+                clientid: any;
+            };
+        };
+    };
+}
 
 @Injectable()
 export class TaskService {
@@ -52,8 +63,8 @@ export class TaskService {
         }
     }
 
-    async pushTask(task) {
-        
+    async pushTask(task: ExtendedTask) {
+
         const clientid = task?.list?.user?.apps.clientid
         const title = task.title
         const content = task.description
@@ -64,7 +75,7 @@ export class TaskService {
         // return
         const uniCloud_url = this.configService.get('uniCloud_url')
 
-        let data = {
+        let msg = {
             "clientid": clientid,
             "title": title,
             "content": content || title,
@@ -75,17 +86,30 @@ export class TaskService {
         function toQueryString(data) {
             return '?' + new URLSearchParams(data).toString();
         }
-        let pushData = toQueryString(data)
-        console.log(pushData, 'push123');
+        let pushData = toQueryString(msg)
+        console.log(pushData, 'pushMsg');
 
-        this.httpService.get(`${uniCloud_url}/uniPush` + pushData).subscribe(
-            res => {
-                console.log('?', res.data);
-            },
-            error => {
-                console.error(error);
-            }
+        const { data } = await firstValueFrom(
+            this.httpService.get(`${uniCloud_url}/uniPush` + pushData).pipe(
+                catchError((error: AxiosError) => {
+                    throw 'An error happened!';
+                }),
+            ),
         );
+
+        if(data.errCode == 0){
+            await this.prisma.task.update({
+                where: {
+                    id: task.id
+                },
+                data: {
+                    isReminded: true
+                }
+            })
+        }
+
+        return
+       
     }
 
     //完成任务

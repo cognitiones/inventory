@@ -10,6 +10,7 @@
 <template>
   <!-- TODO: popup 弹层取消时 加一个过渡动画 -->
   <view :style="{ paddingTop: safeAreaInsets?.top + 11 + 'px' }" class="title">今天</view>
+  <view>{{ cid }}</view>
   <view class="list">
     <view>
       <view class="list-items" v-for="(item, index) in list" :key="index">
@@ -24,7 +25,7 @@
                 @click="handleDetail(it, item)">{{ it.title }}</view>
               <template #right>
                 <view class="action">
-                  <view @click="handleDelete(it)" class="button" style="background-color: blue">操作1</view>
+                  <view @click="handleDelete(it)" class="button" style="background-color: blue">删除</view>
                   <!-- <view class="button" style="background-color:aqua">操作2</view>
                   <view class="button" style="background-color:aquamarine">操作3</view> -->
                 </view>
@@ -78,12 +79,20 @@ const handleDelete = async (it: TaskItem) => {
 }
 
 const { loading, error, data, run } = useRequest<TaskItem[]>(() => getUserTasksForToday({ userId: 1 }))
-
+const cid = ref("")
 watchEffect(() => {
   if (!loading.value && data.value) {
     getTodayList(data.value)
   }
 })
+
+// #ifdef APP-PLUS
+plus.push.getClientInfoAsync((info) => {
+  console.log('cid:', info)
+  cid.value = info.clientid
+  uni.setStorageSync('cid', info.clientid)
+}, (e) => { })
+// #endif
 
 //格式化数据
 const getTodayList = (res: TaskItem[] = data.value) => {

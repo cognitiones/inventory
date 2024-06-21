@@ -6,11 +6,16 @@
                 v-model="form.title" placeholder="你想要做些什么" />
             <wd-input :confirm-hold="true" :hold-keyboard="true" :adjust-position="false" type="text"
                 v-model="form.description" placeholder="描述" />
-            <view class="handle flex mt-2">
-                <view class="confirmBtn">
+            <view class="handle flex mt-2 items-center">
+
+                <image @click="handleDate" class="dateBtn itemBtn" src="http://cdn.chen-zeqi.cn//date.png"></image>
+
+                <view class="confirmBtn itemBtn">
                     <image @click="handleInsert" src="http://cdn.chen-zeqi.cn//confirm.png" class="confirmIcon"></image>
                 </view>
             </view>
+
+            <CalendarPopup ref="calendarPopupRef" @change="calendarChange"></CalendarPopup>
         </view>
     </wd-popup>
 </template>
@@ -18,9 +23,11 @@
 <script lang="ts" setup>
 import { endOfToday, formatDate } from "@/utils/days";
 import { addTask, AddTaskDto } from "@/service/task";
+import CalendarPopup from "./calendar-popup.vue";
 
 const emit = defineEmits(['close', 'change'])
 const show = ref(true)
+const calendarPopupRef = ref(null)
 const form = ref<AddTaskDto>({
     listId: 1,
     title: "",
@@ -30,6 +37,16 @@ const form = ref<AddTaskDto>({
     dueDate: endOfToday(),
     completed: false
 })
+
+const handleDate = () => {
+    calendarPopupRef.value.handleShow()
+}
+
+const calendarChange = (times) => {
+    let { dueDate, reminderDate } = times    
+    form.value.dueDate = dueDate
+    form.value.reminderDate = reminderDate
+}
 
 const handleInsert = async () => {
     let data = {
@@ -65,6 +82,7 @@ defineExpose({
 .confirmBtn {
     box-sizing: border-box;
     padding: 10rpx 30rpx;
+    height: 50rpx;
     border-radius: 30rpx;
     background-color: #1296db;
     display: flex;
@@ -75,5 +93,19 @@ defineExpose({
 .confirmIcon {
     width: 33rpx;
     height: 33rpx;
+}
+
+.dateBtn {
+    display: block;
+    width: 50rpx;
+    height: 50rpx;
+}
+
+.itemBtn {
+    margin: 0 10rpx;
+
+    &:first-child {
+        margin: 0 10rpx 0 0;
+    }
 }
 </style>
