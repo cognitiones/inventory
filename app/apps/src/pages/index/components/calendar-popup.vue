@@ -92,6 +92,7 @@ const calendarConfirm = ()=>{
     }
     
     emit('change',times)
+    show.value = false
 }
 
 defineExpose({

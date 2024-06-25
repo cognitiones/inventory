@@ -106,6 +106,8 @@ export class TaskService {
                     isReminded: true
                 }
             })
+            console.log('推送成功');
+            
         }
 
         return

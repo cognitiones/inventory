@@ -13,8 +13,10 @@ npx prisma generate
 ### 3、验证更新
 npx prisma studio
 
+## Docker
+docker-compose down --rmi all
 
-### 疑问
+## 疑问
 
 1、显式/隐式关联表
 2、级联/关联删除

@@ -1,5 +1,5 @@
 <template>
-    <wd-popup v-model="show" position="bottom" custom-style="height: 700rpx;border-top-left-radius: 20rpx;
+    <wd-popup v-model="show" position="bottom" custom-style="height: 800rpx;border-top-left-radius: 20rpx;
     border-top-right-radius: 20rpx;" custom-class="popup" @close="handleClose">
         <view class="popup">
             <wd-input :confirm-hold="true" :hold-keyboard="true" :adjust-position="false" :focus="true" type="text"
