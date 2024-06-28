@@ -17,8 +17,8 @@
     }
   },
   "tabBar": {
-    "color": "#999999",
-    "selectedColor": "#018d71",
+    "color": "#8a8a8a",
+    "selectedColor": "#1296db",
     "backgroundColor": "#F8F8F8",
     "borderStyle": "black",
     "height": "50px",
@@ -27,16 +27,22 @@
     "spacing": "3px",
     "list": [
       {
-        "iconPath": "static/tabbar/home.png",
-        "selectedIconPath": "static/tabbar/homeHL.png",
+        "iconPath": "static/tabbar/today.png",
+        "selectedIconPath": "static/tabbar/today-select.png",
         "pagePath": "pages/index/index",
-        "text": "首页"
+        "text": "今天"
       },
       {
-        "iconPath": "static/tabbar/example.png",
-        "selectedIconPath": "static/tabbar/exampleHL.png",
+        "iconPath": "static/tabbar/date.png",
+        "selectedIconPath": "static/tabbar/date-select.png",
         "pagePath": "pages/about/about",
-        "text": "关于"
+        "text": "日历"
+      },
+      {
+        "iconPath": "static/tabbar/my.png",
+        "selectedIconPath": "static/tabbar/my-select.png",
+        "pagePath": "pages/my/index",
+        "text": "个人中心"
       }
     ]
   },
@@ -54,6 +60,27 @@
       "type": "page",
       "style": {
         "navigationBarTitleText": "关于"
+      }
+    },
+    {
+      "path": "pages/my/index",
+      "type": "page",
+      "style": {
+        "navigationBarTitleText": "个人中心"
+      }
+    },
+    {
+      "path": "pages/user/login",
+      "type": "page",
+      "style": {
+        "navigationBarTitleText": "登录"
+      }
+    },
+    {
+      "path": "pages/user/register",
+      "type": "page",
+      "style": {
+        "navigationBarTitleText": "注册"
       }
     }
   ],

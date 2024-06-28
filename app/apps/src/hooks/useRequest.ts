@@ -28,6 +28,7 @@ export default function useRequest<T>(
     func()
       .then((res) => {
         data.value = res.data as UnwrapRef<T>
+
         error.value = false
       })
       .catch((err) => {
@@ -37,7 +38,7 @@ export default function useRequest<T>(
         loading.value = false
       })
   }
-  onLoad(() => {    
+  onLoad(() => {
     options.immediate && run()
   })
   return { loading, error, data, run }

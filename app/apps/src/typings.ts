@@ -2,7 +2,7 @@
 
 type IResData<T> = {
   code: number
-  msg: string
+  message: string
   data: T
 }
 

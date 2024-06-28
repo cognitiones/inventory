@@ -29,7 +29,7 @@ const emit = defineEmits(['close', 'change'])
 const show = ref(true)
 const calendarPopupRef = ref(null)
 const form = ref<AddTaskDto>({
-    listId: 1,
+    // listId: 1,
     title: "",
     description: "",
     repeat: 'NONE',
@@ -43,7 +43,7 @@ const handleDate = () => {
 }
 
 const calendarChange = (times) => {
-    let { dueDate, reminderDate } = times    
+    let { dueDate, reminderDate } = times
     form.value.dueDate = dueDate
     form.value.reminderDate = reminderDate
 }

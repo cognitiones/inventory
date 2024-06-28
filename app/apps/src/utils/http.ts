@@ -1,32 +1,42 @@
 import { CustomRequestOptions } from '@/interceptors/request'
+import { getIsTabbar } from '../utils/index'
 
 export const http = <T>(options: CustomRequestOptions) => {
   // 1. 返回 Promise 对象
   return new Promise<IResData<T>>((resolve, reject) => {
     uni.request({
+      header: {
+        authorization: 'Bear ' + uni.getStorageSync('token') || '',
+      },
       ...options,
       dataType: 'json',
       // #ifndef MP-WEIXIN
       responseType: 'json',
       // #endif
       // 响应成功
-      success(res) {
+      success(result) {
+        let res: IResData<T> = result.data as IResData<T>
         // 状态码 2xx，参考 axios 的设计
-        if (res.statusCode >= 200 && res.statusCode < 300) {
+        if (res.code >= 200 && res.code < 300) {
           // 2.1 提取核心数据 res.data
-          resolve(res.data as IResData<T>)
-        } else if (res.statusCode === 401) {
+          resolve(res as IResData<T>)
+        } else if (res.code === 401) {
           // 401错误  -> 清理用户信息，跳转到登录页
           // userStore.clearUserInfo()
-          // uni.navigateTo({ url: '/pages/login/login' })
+          // uni.navigateTo({ url: '/pages/user/login' })
+          const isTabbar = getIsTabbar()
+          if (!isTabbar) {
+            uni.navigateTo({ url: '/pages/user/login' })
+          }
           reject(res)
         } else {
           // 其他错误 -> 根据后端错误信息轻提示
           !options.hideErrorToast &&
             uni.showToast({
               icon: 'none',
-              title: (res.data as IResData<T>).msg || '请求错误',
+              title: res.message || '请求错误',
             })
+
           reject(res)
         }
       },

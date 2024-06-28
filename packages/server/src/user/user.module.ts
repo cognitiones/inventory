@@ -6,5 +6,6 @@ import { ListModule } from "src/list/list.module";
   imports: [ListModule],
   controllers: [UserController],
   providers: [UserService],
+  exports: [UserService]
 })
 export class UserModule { }

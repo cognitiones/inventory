@@ -46,7 +46,7 @@ export class LoginGuard implements CanActivate {
     if (!requireLogin) {
       return true;
     }
-
+    
     const authorization = request.headers.authorization
 
     if (!authorization) {
@@ -55,6 +55,7 @@ export class LoginGuard implements CanActivate {
 
     try {
       const token = authorization.split(' ')[1]
+
       const data = this.jwtService.verify<JwtUserData>(token)
 
       request.user = {

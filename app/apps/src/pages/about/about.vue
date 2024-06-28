@@ -7,29 +7,42 @@
 </route>
 
 <template>
-  <view class=" overflow-hidden pt-2 px-4">
-
+  <view class="overflow-hidden pt-2 px-4">
     <view class="calendar">
-      <wu-calendar @change="calendarChange" :selected="selected" type="week" :itemHeight="50" :insert="true"
-        :fold="true"></wu-calendar>
+      <wu-calendar
+        @change="calendarChange"
+        :selected="selected"
+        type="week"
+        :itemHeight="50"
+        :insert="true"
+        :fold="true"
+      ></wu-calendar>
     </view>
     <view v-if="list.length != 0" class="list bg-white mt-4 box-border px-3 py-3">
-      <view class="item h-6 flex items-center my-2 first:mt-0 last:mb-0" v-for="(item, index) in list" :key="index">
-        {{ item.title }}
+      <view
+        class="item h-6 flex items-center my-2 first:mt-0 last:mb-0"
+        v-for="(item, index) in list"
+        :key="index"
+      >
+        <wd-checkbox v-model="item.completed" disabled shape="square">{{ item.title }}</wd-checkbox>
       </view>
     </view>
   </view>
-
 </template>
 <script lang="ts" setup>
 // 获取屏幕边界到安全区域距离
-import { TaskItem } from "../index/types/index";
-import { getUserTasksForToday, getUserTasksForMonth, MonthTask } from "@/service/task";
-import { startOfToday } from "@/utils/days";
+import { TaskItem } from '../index/types/index'
+import { getUserTasksForMonth, MonthTask } from '@/service/task'
+import { startOfToday } from '@/utils/days'
 
 const list = ref<TaskItem[]>([])
 const selected = ref([])
-const { loading, error, data: monthTasks, run: getMonthTasks } = useRequest<MonthTask[]>(() => getUserTasksForMonth({ userId: 1 }))
+const {
+  loading,
+  error,
+  data: monthTasks,
+  run: getMonthTasks,
+} = useRequest<MonthTask[]>(() => getUserTasksForMonth())
 
 const calendarChange = (e) => {
   let fulldate = e.fulldate
@@ -41,7 +54,6 @@ const calendarChange = (e) => {
   })
 
   list.value = monthTask ? monthTask.data : []
-  
 }
 
 const getCalendarData = (data: MonthTask[]) => {
@@ -57,7 +69,7 @@ const getCalendarData = (data: MonthTask[]) => {
       date: monthTask.date,
       badgeColor: 'red',
       badgePosition: 'bottom-center',
-      badge: true
+      badge: true,
     }
 
     array.push(obj)
@@ -65,9 +77,15 @@ const getCalendarData = (data: MonthTask[]) => {
 
   selected.value = array
 }
+
+onShow(() => {
+  if (loading.value === false) {
+    getMonthTasks()
+  }
+})
+
 watchEffect(() => {
   if (!loading.value && monthTasks.value) {
-    console.log(monthTasks.value);
     getCalendarData(monthTasks.value)
   }
 })

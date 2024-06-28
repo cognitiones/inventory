@@ -45,4 +45,17 @@ export class ListService {
             }
         })
     }
+
+    //获取用户下的第一条清单
+    async getFirstList(userId: number) {
+        return await this.prisma.list.findFirst({
+            where: {
+                userId: userId,
+            },
+            orderBy: {
+                createdAt: "asc"
+            }
+        })
+    }
+    
 }
