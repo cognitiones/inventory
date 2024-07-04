@@ -16,6 +16,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { LoginGuard } from './login.guard';
 import { PermissionGuard } from './permission.guard';
 import { ScheduleModule } from "@nestjs/schedule";
+import { MinioModule } from './minio/minio.module';
 
 import * as path from 'path'
 
@@ -24,7 +25,7 @@ import * as path from 'path'
     PrismaModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: path.join(__dirname, '.env')
+      envFilePath: path.join(__dirname,  '.env')
     }),
     JwtModule.registerAsync({
       global: true,
@@ -39,7 +40,7 @@ import * as path from 'path'
       inject: [ConfigService]
     }),
     ScheduleModule.forRoot(),
-    UserModule, ListModule, TaskModule, TagModule, RoleModule, PermissionModule
+    UserModule, ListModule, TaskModule, TagModule, RoleModule, PermissionModule, MinioModule
   ],
   controllers: [AppController],
   providers: [

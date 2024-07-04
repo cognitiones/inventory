@@ -11,7 +11,6 @@
   <view v-if="!isLogin">
     <!-- TODO: popup 弹层取消时 加一个过渡动画 -->
     <view :style="{ paddingTop: safeAreaInsets?.top + 11 + 'px' }" class="title">今天</view>
-    <view>{{ cid }}</view>
     <view class="list">
       <view>
         <view class="list-items" v-for="(item, index) in list" :key="index">
@@ -104,29 +103,19 @@ const handleLogin = () => {
 
 const { loading, error, data, run } = useRequest<TaskItem[]>(() => getUserTasksForToday())
 console.log(error, 'error')
-const cid = ref('')
 watchEffect(() => {
   if (!loading.value) {
     if (data.value) {
       getTodayList(data.value)
     } else if (error) {
-      if (error.value.code === 401) {
+      if (error.value!.code === 401) {
         isLogin.value = true
       }
     }
   }
 })
 
-// #ifdef APP-PLUS
-plus.push.getClientInfoAsync(
-  (info) => {
-    console.log('cid:', info)
-    cid.value = info.clientid
-    uni.setStorageSync('cid', info.clientid)
-  },
-  (e) => {},
-)
-// #endif
+
 
 //格式化数据
 const getTodayList = (res: TaskItem[] = data.value) => {

@@ -9,6 +9,7 @@ export const http = <T>(options: CustomRequestOptions) => {
         authorization: 'Bear ' + uni.getStorageSync('token') || '',
       },
       ...options,
+      sslVerify: false,
       dataType: 'json',
       // #ifndef MP-WEIXIN
       responseType: 'json',
@@ -24,10 +25,10 @@ export const http = <T>(options: CustomRequestOptions) => {
           // 401错误  -> 清理用户信息，跳转到登录页
           // userStore.clearUserInfo()
           // uni.navigateTo({ url: '/pages/user/login' })
-          const isTabbar = getIsTabbar()
-          if (!isTabbar) {
-            uni.navigateTo({ url: '/pages/user/login' })
-          }
+          // const isTabbar = getIsTabbar()
+          // if (!isTabbar) {
+          uni.navigateTo({ url: '/pages/user/login' })
+          // }
           reject(res)
         } else {
           // 其他错误 -> 根据后端错误信息轻提示
@@ -42,6 +43,8 @@ export const http = <T>(options: CustomRequestOptions) => {
       },
       // 响应失败
       fail(err) {
+        console.log(err, 'err')
+
         uni.showToast({
           icon: 'none',
           title: '网络错误，换个网络试试',

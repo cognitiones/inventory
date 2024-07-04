@@ -29,7 +29,8 @@ export class UserService {
     if (!user) {
       throw new HttpException('用户不存在', HttpStatus.BAD_REQUEST);
     }
-
+    console.log(user, data.password);
+    
     if (!(user.password === md5(data.password))) {
       throw new HttpException('密码错误', HttpStatus.BAD_REQUEST);
     }
@@ -90,7 +91,7 @@ export class UserService {
     });
 
     //omit user字段中的 password
-    user && delete user.password;
+    // user && delete user.password;
 
     if (!user) {
       return null;

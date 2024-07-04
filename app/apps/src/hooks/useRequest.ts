@@ -20,7 +20,7 @@ export default function useRequest<T>(
   options: IUseRequestOptions<T> = { immediate: true },
 ) {
   const loading = ref(true)
-  const error = ref(false)
+  const error = ref({})
   const data = ref<T>(options.initialData)
 
   const run = async () => {
