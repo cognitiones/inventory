@@ -43,9 +43,12 @@ const handleDate = () => {
 }
 
 const calendarChange = (times) => {
-    let { dueDate, reminderDate } = times
+    let { dueDate, reminderDate, repeat } = times
     form.value.dueDate = dueDate
     form.value.reminderDate = reminderDate
+    form.value.repeat = repeat
+    console.log(form.value,'表单');
+
 }
 
 const handleInsert = async () => {

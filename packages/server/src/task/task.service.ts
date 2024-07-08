@@ -22,8 +22,10 @@ import { AxiosError } from 'axios';
 interface ExtendedTask extends Task {
   list?: {
     user?: {
-      apps?: {
-        clientid: any;
+      platformInfo: {
+        app: {
+          clientId: any;
+        };
       };
     };
   };
@@ -45,6 +47,7 @@ export class TaskService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async getPushTasks() {
+
     const now = new Date();
     const tasks = await this.prisma.task.findMany({
       where: {
@@ -59,15 +62,21 @@ export class TaskService {
           select: {
             user: {
               select: {
-                apps: true,
+                platformInfo: {
+                  select: {
+                    app: {
+                      select: {
+                        clientId: true,
+                      },
+                    },
+                  },
+                },
               },
             },
           },
         },
       },
     });
-
-    // console.log('tasks', tasks);
 
     for (const task of tasks) {
       await this.pushTask(task);
@@ -76,7 +85,8 @@ export class TaskService {
   }
 
   async pushTask(task: ExtendedTask) {
-    const clientid = task?.list?.user?.apps.clientid;
+    // return
+    const clientid = task?.list?.user?.platformInfo?.app?.clientId;
     const title = task.title;
     const content = task.description;
 
@@ -85,15 +95,17 @@ export class TaskService {
     }
     // return
     const uniCloud_url = this.configService.get('uniCloud_url');
-
+   
+    
     let msg = {
-      clientid: clientid,
+      clientid: [clientid],
       title: title,
       content: content || title,
       // "payload": {
       //     "text": "第一条 payload - text"
       // }
     };
+    console.log(msg.clientid,'1');
     function toQueryString(data) {
       return '?' + new URLSearchParams(data).toString();
     }
@@ -107,7 +119,8 @@ export class TaskService {
         }),
       ),
     );
-
+    console.log(data,'data');
+    
     if (data.errCode == 0) {
       await this.prisma.task.update({
         where: {
@@ -171,6 +184,14 @@ export class TaskService {
         createdAt: 'asc',
       },
     });
+    console.log(tasks,'月份');
+
+    tasks.forEach((task)=>{
+      if(task.repeat == "WEEKLY"){
+        //生成本月每周的任务
+        
+      }
+    })
 
     // 按天排列任务
     const tasksByDay = Object.values(

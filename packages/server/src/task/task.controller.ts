@@ -74,6 +74,11 @@ export class TaskController {
     return await this.taskService.getUserTasksForMonth(userId, data);
   }
 
+  @Post('/getPushTasks')
+  async getPushTasks(){
+    return await this.taskService.getPushTasks()
+  }
+
   // @Get('/pushTask')
   // async pushTask(){
   //   return await this.taskService.pushTask()

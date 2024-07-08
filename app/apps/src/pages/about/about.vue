@@ -42,7 +42,7 @@ const {
   error,
   data: monthTasks,
   run: getMonthTasks,
-} = useRequest<MonthTask[]>(() => getUserTasksForMonth())
+} = useRequest<MonthTask[]>(() => getUserTasksForMonth({}))
 
 const calendarChange = (e) => {
   let fulldate = e.fulldate

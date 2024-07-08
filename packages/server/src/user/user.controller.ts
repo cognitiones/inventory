@@ -9,6 +9,7 @@ import {
   GetUserDto,
 } from './dto/user.dto';
 import { getAllVo, RegisterUserVo } from './vo/user.vo';
+import { RequireLogin, SystemInfo } from 'src/custom.decorator';
 import {
   ApiTags,
   ApiBody,
@@ -26,8 +27,11 @@ export class UserController {
   @ApiBody({ type: RegisterUserDto })
   @ApiResponse({ type: RegisterUserVo })
   @Post('/register')
-  async register(@Body() registerUser: RegisterUserDto) {
-    return await this.userService.addUser(registerUser);
+  async register(
+    @SystemInfo('platform') platform: string,
+    @Body() registerUser: RegisterUserDto,
+  ) {
+    return await this.userService.addUser(platform, registerUser);
   }
 
   @Post('/login')
@@ -52,7 +56,11 @@ export class UserController {
   }
 
   @Post('/updateUser')
-  async updateUser(@Body() data: UpdateUserDto) {
-    return await this.userService.updateUser(data);
+  @RequireLogin()
+  async updateUser(
+    @SystemInfo('platform') platform: string,
+    @Body() data: UpdateUserDto,
+  ) {
+    return await this.userService.updateUser(platform, data);
   }
 }

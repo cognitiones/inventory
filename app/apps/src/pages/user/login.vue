@@ -17,8 +17,8 @@
             clearable
             v-model="model.email"
             placeholder="请输入邮箱"
+            class="box"
             :rules="[{ required: true, message: '请填写邮箱' }]"
-            class="mb-5"
           />
           <wd-input
             label="密码"
@@ -29,7 +29,7 @@
             v-model="model.password"
             placeholder="请输入密码"
             :rules="[{ required: true, message: '请填写密码' }]"
-            class="mb-5"
+            class="mb-5 box"
           />
         </wd-cell-group>
         <view class="footer">
@@ -57,7 +57,7 @@ function handleSubmit() {
       if (valid) {
         const res = await login(model)
 
-        if (res.code === 201) {
+        if (res.code === 200) {
           console.log(res, 'res')
 
           uni.setStorageSync('token', res.data.accessToken)
@@ -85,6 +85,11 @@ const handleRegister = () => {
 <style lang="scss" scoped>
 .login {
   width: 600rpx;
-  margin: 100rpx auto;
+  padding-top: 100rpx;
+  margin: 0 auto;
+}
+
+.box {
+  padding: 30rpx !important;
 }
 </style>

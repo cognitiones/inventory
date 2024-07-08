@@ -101,21 +101,22 @@ const handleLogin = () => {
   uni.navigateTo({ url: '/pages/user/login' })
 }
 
-const { loading, error, data, run } = useRequest<TaskItem[]>(() => getUserTasksForToday())
-console.log(error, 'error')
+const { loading, error, data, run } = useRequest<TaskItem[]>(() => getUserTasksForToday(), {
+  immediate: false,
+})
+
 watchEffect(() => {
   if (!loading.value) {
     if (data.value) {
       getTodayList(data.value)
+      isLogin.value = false
     } else if (error) {
-      if (error.value!.code === 401) {
+      if (error.value.code === 401) {
         isLogin.value = true
       }
     }
   }
 })
-
-
 
 //格式化数据
 const getTodayList = (res: TaskItem[] = data.value) => {
@@ -144,9 +145,7 @@ const getTodayList = (res: TaskItem[] = data.value) => {
 }
 
 onShow(() => {
-  if (loading.value === false) {
-    run()
-  }
+  run()
 })
 </script>
 

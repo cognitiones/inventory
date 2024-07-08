@@ -7,6 +7,12 @@ type IUseRequestOptions<T> = {
   initialData?: T
 }
 
+type Error = {
+  code: number
+  data: unknown
+  message: string
+}
+
 /**
  * useRequest是一个定制化的请求钩子，用于处理异步请求和响应。
  * @param func 一个执行异步请求的函数，返回一个包含响应数据的Promise。
@@ -20,7 +26,7 @@ export default function useRequest<T>(
   options: IUseRequestOptions<T> = { immediate: true },
 ) {
   const loading = ref(true)
-  const error = ref({})
+  const error = ref<Error>()
   const data = ref<T>(options.initialData)
 
   const run = async () => {
@@ -29,7 +35,7 @@ export default function useRequest<T>(
       .then((res) => {
         data.value = res.data as UnwrapRef<T>
 
-        error.value = false
+        // error.value = false
       })
       .catch((err) => {
         error.value = err

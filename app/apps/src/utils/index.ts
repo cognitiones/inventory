@@ -11,7 +11,8 @@ export const getIsTabbar = () => {
     return false
   }
   // getCurrentPages() 至少有1个元素，所以不再额外判断
-  const lastPage = getCurrentPages().at(-1)
+  const pages = getCurrentPages()
+  const lastPage = pages[pages.length - 1]
   const currPath = lastPage.route
   return !!tabBar.list.find((e) => e.pagePath === currPath)
 }

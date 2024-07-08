@@ -40,6 +40,8 @@ export class RegisterUserDto {
     message: '密码不能少于 6 位',
   })
   password: string;
+
+  app_clientId?: string[];
 }
 
 export class GetUserAllDto {
@@ -58,9 +60,9 @@ export class GetUserAllDto {
 
 export class GetUserDto {
   email?: string;
-  
+
   @Type(() => Number)
-  userId?: number
+  userId?: number;
 }
 
 export class GetUserPermissionsDto {
@@ -80,10 +82,11 @@ export class UpdateUserDto {
 
   password?: string;
 
-  apps?: appDto;
+  headPic?: string
+
+  app: App
 }
 
-class appDto {
-  id?: number;
-  clientid?: string;
+class App {
+  clientId: string
 }

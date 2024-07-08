@@ -34,7 +34,8 @@ export class MinioController {
     
     const bucketName = 'inventory';  // 您的存储桶名称
     const res = await this.minioClient.putObject(bucketName, fileName, fileBuffer);
-    console.log(res,'res');
-    
+
+    const url = 'http://192.168.1.102:9000/inventory/' + fileName
+    return url
   }
 }

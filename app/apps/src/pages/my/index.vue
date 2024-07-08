@@ -7,51 +7,78 @@
 </route>
 <template>
   <view>
-    <view>
-      <!-- <wd-upload
+    <view class="my">
+      <wd-upload
+        custom-evoke-class="upload"
+        :file-list="fileList"
         image-mode="aspectFill"
-        action="minio/uploadFile"
-      ></wd-upload> -->
-      <image src="http://192.168.1.103:9000/inventory/6.png"></image>
-      <view @click="upload">上传图片</view>
+        :limit="1"
+        action="/minio/uploadFile"
+        @change="handleChange"
+        @success="handleUploadSuccess"
+        @fail="handleError"
+      ></wd-upload>
 
       <view>姓名：{{ user.name }}</view>
       <view>邮箱：{{ user.email }}</view>
       // #ifdef APP-PLUS
-      <view>设备号：{{ clientid }}</view>
+      <view @click="handleCid(clientid)">设备号：{{ clientid }}</view>
       // #endif
     </view>
   </view>
 </template>
 <script lang="ts" setup>
-import { getUser } from '@/service/user'
+import { getUser, updateUser, UpdateUserDto, User } from '@/service/user'
+
 const userId = uni.getStorageSync('userId')
-const { loading, error, data, run } = useRequest(() => getUser({ userId }))
-const user = ref({})
+const { loading, error, data, run } = useRequest(() => getUser({ userId }), { immediate: false })
+const user = ref<User>({
+  name: '',
+  email: '',
+  headPic: '',
+})
 const clientid = ref()
 
-const upload = () => {
-  uni.chooseImage({
-    count: 1,
-    success: function (res) {
-      const filePath = res.tempFilePaths[0]
-      const fileName = res.tempFiles[0].name
-      uni.uploadFile({
-        url: '/minio/uploadFile', // 后端文件上传 API 地址
-        filePath: filePath,
-        name: 'file', // 表单字段名
-        formData: {
-          fileName: fileName, // 传递文件名
-        },
-        success: function (uploadRes) {
-          console.log('上传成功', uploadRes)
-        },
-        fail: function (uploadErr) {
-          console.log('上传失败', uploadErr)
-        },
-      })
-    },
-  })
+const fileList = ref<any[]>([])
+
+function handleChange({ fileList: files }) {
+  console.log(files, '11')
+
+  fileList.value = files
+}
+
+const handleError = (event) => {
+  console.log(event, 'ev')
+}
+
+const handleCid = async (cid)=>{
+  const data: UpdateUserDto = {
+    id: userId,
+    app: {
+      clientId: cid,
+    }
+  }
+
+  const res = await updateUser(data)
+  console.log(res, '设备号')
+}
+
+const uploadUser = async () => {
+  const data: UpdateUserDto = {
+    id: userId,
+    headPic: user.value.headPic,
+    // apps: {
+    //   clientid: cid,
+    // },
+  }
+  const res = await updateUser(data)
+  console.log(res, '上传结果')
+}
+
+const handleUploadSuccess = ({ file }) => {
+  console.log(file.response, 'event')
+  user.value.headPic = file.response
+  uploadUser()
 }
 
 // #ifdef APP-PLUS
@@ -59,7 +86,6 @@ plus.push.getClientInfoAsync(
   (info) => {
     uni.setStorageSync('cid', info.clientid)
     clientid.value = info.clientid
-    console.log(clientid.value, 'value')
   },
   (e) => {},
 )
@@ -69,11 +95,34 @@ watchEffect(() => {
   if (!loading.value) {
     if (data.value) {
       user.value = data.value
+      if (data.value.headPic) {
+        fileList.value = [
+          {
+            url: data.value.headPic,
+          },
+        ]
+      }
     } else if (error) {
       if (error.value.code === 401) {
-        isLogin.value = true
+        // isLogin.value = true
       }
     }
   }
 })
+
+onShow(() => {
+  run()
+})
 </script>
+
+<style lang="scss" scoped>
+.my {
+  box-sizing: border-box;
+  padding: 20rpx;
+  margin-top: 20rpx;
+}
+
+.upload {
+  border-radius: 50%;
+}
+</style>

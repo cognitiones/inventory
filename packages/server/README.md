@@ -20,6 +20,7 @@ docker-compose down --rmi all
 
 启动容器：
 docker-compose up
+
 ## 疑问
 
 1、显式/隐式关联表

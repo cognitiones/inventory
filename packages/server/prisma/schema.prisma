@@ -14,24 +14,34 @@ datasource db {
 }
 
 model User {
-  id        Int        @id @default(autoincrement())
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  email     String     @unique
-  name      String?
-  password  String
-  isFrozen  Boolean    @default(false)
-  isAdmin   Boolean    @default(false)
-  lists     List[]
-  apps      App?
-  roles     UserRole[]
+  id           Int           @id @default(autoincrement())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  email        String        @unique
+  name         String?
+  headPic      String?
+  password     String
+  isFrozen     Boolean       @default(false)
+  isAdmin      Boolean       @default(false)
+  lists        List[]
+  platformInfo PlatformInfo?
+  roles        UserRole[]
+}
+
+model PlatformInfo {
+  id     Int  @id @default(autoincrement())
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id])
+
+  app App?
 }
 
 model App {
-  id       Int   @id @default(autoincrement())
-  clientid Json?
-  user     User  @relation(fields: [userId], references: [id])
-  userId   Int   @unique
+  id           Int          @id @default(autoincrement())
+  platformId   Int          @unique
+  platformInfo PlatformInfo @relation(fields: [platformId], references: [id])
+
+  clientId Json?
 }
 
 model Role {

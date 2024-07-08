@@ -16,3 +16,14 @@ export const UserInfo = createParamDecorator(
       return data ? request.user[data] : request.user;
     },
   )
+
+  export const SystemInfo = createParamDecorator(
+    (data: string, ctx: ExecutionContext) => {
+      const request: Request = ctx.switchToHttp().getRequest();
+  
+      if(!request.systemInfo) {
+          return null;
+      }
+      return data ? request.systemInfo[data] : request.systemInfo;
+    },
+  )

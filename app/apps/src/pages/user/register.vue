@@ -17,17 +17,17 @@
           clearable
           v-model="model.name"
           placeholder="请输入用户名"
-          class="mb-5"
+          class="box"
         />
         <wd-input
-          label="请输入邮箱"
+          label="邮箱"
           label-width="100px"
           prop="email"
           clearable
           v-model="model.email"
           placeholder="请输入邮箱"
           :rules="[{ required: true, message: '请填写邮箱' }]"
-          class="mb-5"
+          class="box"
         />
         <wd-input
           label="密码"
@@ -38,7 +38,7 @@
           v-model="model.password"
           placeholder="请输入密码"
           :rules="[{ required: true, message: '请填写密码' }]"
-          class="mb-5"
+          class="mb-5 box"
         />
       </wd-cell-group>
       <view class="footer">
@@ -56,18 +56,29 @@ const model = reactive<RegisterDto>({
   name: '',
   password: '',
 })
-
+const clientid = ref<string[]>()
 const form = ref()
+
+// #ifdef APP-PLUS
+plus.push.getClientInfoAsync(
+  (info) => {
+    uni.setStorageSync('cid', info.clientid)
+    clientid.value = [info.clientid]
+  },
+  (e) => {},
+)
+// #endif
 
 function handleSubmit() {
   form.value
     .validate()
     .then(async ({ valid, errors }) => {
       if (valid) {
-        console.log('ok了')
-        const res = await register(model)
-        console.log(res);
-
+        const res = await register({
+          ...model,
+          app_clientId: clientid.value,
+        })
+        console.log(res)
       }
     })
     .catch((error) => {
@@ -82,14 +93,13 @@ const handleLogin = () => {
 }
 </script>
 <style lang="scss" scoped>
-.login {
-  width: 600rpx;
-  margin: 100rpx auto;
-}
-</style>
-<style lang="scss" scoped>
 .register {
   width: 600rpx;
-  margin: 100rpx auto;
+  padding: 100rpx;
+  margin: 0 auto;
+}
+
+.box {
+  padding: 30rpx !important;
 }
 </style>

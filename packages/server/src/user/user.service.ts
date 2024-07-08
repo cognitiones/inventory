@@ -6,6 +6,7 @@ import {
   LoginDto,
   GetUserPermissionsDto,
   UpdateUserDto,
+  RegisterUserDto,
 } from './dto/user.dto';
 import { ListService } from 'src/list/list.service';
 import { ConfigService } from '@nestjs/config';
@@ -30,7 +31,7 @@ export class UserService {
       throw new HttpException('用户不存在', HttpStatus.BAD_REQUEST);
     }
     console.log(user, data.password);
-    
+
     if (!(user.password === md5(data.password))) {
       throw new HttpException('密码错误', HttpStatus.BAD_REQUEST);
     }
@@ -87,7 +88,7 @@ export class UserService {
             role: true,
           },
         },
-      }
+      },
     });
 
     //omit user字段中的 password
@@ -102,10 +103,30 @@ export class UserService {
     };
   }
 
-  async addUser(data: Prisma.UserCreateInput) {
+  async addUser(platform: string, data: RegisterUserDto) {
+    let option = {};
+    let { app_clientId, ...userData } = data;
+    if (
+      platform === 'app' &&
+      data.app_clientId &&
+      data.app_clientId.length > 0
+    ) {
+      option = {
+        platformInfo: {
+          create: {
+            app: {
+              create: {
+                clientId: app_clientId,
+              },
+            },
+          },
+        },
+      };
+    }
+
     return await this.prisma.user.create({
       data: {
-        ...data,
+        ...userData,
         password: md5(data.password),
         lists: {
           create: {
@@ -113,6 +134,7 @@ export class UserService {
             description: '收集箱',
           },
         },
+        ...option,
       },
       select: {
         id: true,
@@ -163,33 +185,38 @@ export class UserService {
     return permissions;
   }
 
-  async updateUser(data: UpdateUserDto) {
-    const { apps, id, ...userData } = data;
-
-    if (apps) {
+  async updateUser(platform, data: UpdateUserDto) {
+    const { id, app, ...userData } = data;
+    if (platform === 'app') {
+      let option = {};
+      if (app && app.clientId) {
+        option = {
+          platformInfo: {
+            update: {
+              data: {
+                app: {
+                  update: {
+                    data: {
+                      clientId: app.clientId,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        };
+      }
       return await this.prisma.user.update({
         where: {
           id: id,
         },
         data: {
           ...userData,
-          apps: {
-            connectOrCreate: {
-              where: { id: apps.id || 0 },
-              create: { clientid: apps.clientid },
-            },
-          },
+          ...option
         },
-        include: {
-          apps: true,
+        select: {
+          id: true,
         },
-      });
-    } else {
-      return await this.prisma.user.update({
-        where: {
-          id: id,
-        },
-        data: userData,
       });
     }
   }

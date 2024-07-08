@@ -3,9 +3,12 @@ import { getIsTabbar } from '../utils/index'
 
 export const http = <T>(options: CustomRequestOptions) => {
   // 1. 返回 Promise 对象
+  // console.log(import.meta.env,'emv');
+
   return new Promise<IResData<T>>((resolve, reject) => {
     uni.request({
       header: {
+        platform: import.meta.env.VITE_APP_PLATFORM,
         authorization: 'Bear ' + uni.getStorageSync('token') || '',
       },
       ...options,
@@ -25,10 +28,10 @@ export const http = <T>(options: CustomRequestOptions) => {
           // 401错误  -> 清理用户信息，跳转到登录页
           // userStore.clearUserInfo()
           // uni.navigateTo({ url: '/pages/user/login' })
-          // const isTabbar = getIsTabbar()
-          // if (!isTabbar) {
-          uni.navigateTo({ url: '/pages/user/login' })
-          // }
+          const isTabbar = getIsTabbar()
+          if (!isTabbar) {
+            uni.navigateTo({ url: '/pages/user/login' })
+          }
           reject(res)
         } else {
           // 其他错误 -> 根据后端错误信息轻提示
