@@ -25,7 +25,7 @@ import * as path from 'path'
     PrismaModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: path.join(__dirname,  '.env')
+      envFilePath: path.join(__dirname,  `.env.${process.env.NODE_ENV || 'development'}`)
     }),
     JwtModule.registerAsync({
       global: true,

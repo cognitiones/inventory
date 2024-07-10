@@ -1,6 +1,11 @@
 import { CustomRequestOptions } from '@/interceptors/request'
 import { getIsTabbar } from '../utils/index'
 
+interface ReloadToken {
+  accessToken: string
+  refreshToken: string
+}
+
 export const http = <T>(options: CustomRequestOptions) => {
   // 1. 返回 Promise 对象
   // console.log(import.meta.env,'emv');
@@ -18,20 +23,29 @@ export const http = <T>(options: CustomRequestOptions) => {
       responseType: 'json',
       // #endif
       // 响应成功
-      success(result) {
+      async success(result) {
         let res: IResData<T> = result.data as IResData<T>
         // 状态码 2xx，参考 axios 的设计
         if (res.code >= 200 && res.code < 300) {
           // 2.1 提取核心数据 res.data
           resolve(res as IResData<T>)
         } else if (res.code === 401) {
+          const reloadMsg = await reloadToken()
+          if (!reloadMsg) {
+            const isTabbar = getIsTabbar()
+            if (!isTabbar) {
+              uni.navigateTo({ url: '/pages/user/login' })
+            }
+            reject(res)
+          }
+
+          //重新请求
+          http<T>(options).then(resolve).catch(reject)
+
           // 401错误  -> 清理用户信息，跳转到登录页
           // userStore.clearUserInfo()
           // uni.navigateTo({ url: '/pages/user/login' })
-          const isTabbar = getIsTabbar()
-          if (!isTabbar) {
-            uni.navigateTo({ url: '/pages/user/login' })
-          }
+        } else if (res.code === 402) {
           reject(res)
         } else {
           // 其他错误 -> 根据后端错误信息轻提示
@@ -56,6 +70,18 @@ export const http = <T>(options: CustomRequestOptions) => {
       },
     })
   })
+}
+
+async function reloadToken() {
+  const refreshToken = uni.getStorageSync('refreshToken') || ''
+  if (!refreshToken) return false
+  const res = await http.post<ReloadToken>('/user/refreshToken', { refreshToken })
+  if (res.code == 200) {
+    uni.setStorageSync('token', res.data.accessToken)
+    uni.setStorageSync('refreshToken', res.data.refreshToken)
+
+    return true
+  }
 }
 
 /**

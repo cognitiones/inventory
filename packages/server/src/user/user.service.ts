@@ -212,7 +212,7 @@ export class UserService {
         },
         data: {
           ...userData,
-          ...option
+          ...option,
         },
         select: {
           id: true,
@@ -237,5 +237,45 @@ export class UserService {
       },
     });
     return user.lists[0];
+  }
+
+  async refreshToken(reloadToken: string) {
+    try {
+      const data = this.jwtService.verify(reloadToken);
+      const user = await this.getUser({ userId: data.userId });
+      if (!user) {
+        throw new HttpException('用户不存在', HttpStatus.BAD_REQUEST);
+      }
+
+      const accessToken = this.jwtService.sign(
+        {
+          userId: user.id,
+          email: user.email,
+          roles: user.roles,
+          permissions: await this.getUserPermissions({ userId: user.id }),
+        },
+        {
+          expiresIn:
+            this.configService.get('jwt_access_token_expires_time') || '30m',
+        },
+      );
+
+      const refreshToken = this.jwtService.sign(
+        {
+          userId: user.id,
+        },
+        {
+          expiresIn:
+            this.configService.get('jwt_refresh_token_expires_time') || '7d',
+        },
+      );
+
+      return {
+        accessToken,
+        refreshToken
+      }
+    } catch (error) {
+      throw new HttpException('token 已失效，请重新登录', 402);
+    }
   }
 }

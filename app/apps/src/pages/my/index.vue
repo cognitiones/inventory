@@ -29,7 +29,7 @@
 </template>
 <script lang="ts" setup>
 import { getUser, updateUser, UpdateUserDto, User } from '@/service/user'
-
+const imgUrl = useUrls('imgUrl')
 const userId = uni.getStorageSync('userId')
 const { loading, error, data, run } = useRequest(() => getUser({ userId }), { immediate: false })
 const user = ref<User>({
@@ -42,7 +42,7 @@ const clientid = ref()
 const fileList = ref<any[]>([])
 
 function handleChange({ fileList: files }) {
-  console.log(files, '11')
+  console.log('change', files);
 
   fileList.value = files
 }
@@ -98,7 +98,7 @@ watchEffect(() => {
       if (data.value.headPic) {
         fileList.value = [
           {
-            url: data.value.headPic,
+            url: imgUrl + data.value.headPic,
           },
         ]
       }

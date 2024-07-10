@@ -92,4 +92,7 @@ export class DeleteTaskDto {
 export class GetUserTasksForMonthDto {
   @Type(() => Number)
   month?: number;
+
+  @Type(() => Number)
+  year?: number;
 }

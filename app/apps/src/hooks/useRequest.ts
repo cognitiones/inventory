@@ -22,16 +22,16 @@ type Error = {
  * @returns 返回一个对象{loading, error, data, run}，包含请求的加载状态、错误信息、响应数据和手动触发请求的函数。
  */
 export default function useRequest<T>(
-  func: () => Promise<IResData<T>>,
+  func: (params?: any) => Promise<IResData<T>>,
   options: IUseRequestOptions<T> = { immediate: true },
 ) {
   const loading = ref(true)
   const error = ref<Error>()
   const data = ref<T>(options.initialData)
 
-  const run = async () => {
+  const run = async (params?: any) => {
     loading.value = true
-    func()
+    func(params)
       .then((res) => {
         data.value = res.data as UnwrapRef<T>
 

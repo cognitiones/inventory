@@ -29,6 +29,8 @@ export interface AddTaskDto {
 
 export interface GetUserTasksForMonthDto {
   month?: number
+
+  year?: number
 }
 
 export const getUserTasksForToday = () => {
@@ -48,5 +50,5 @@ export const deleteTask = (data: DeleteTaskDto) => {
 }
 
 export const getUserTasksForMonth = (data: GetUserTasksForMonthDto) => {
-  return http.get<MonthTask[]>('/task/getUserTasksForMonth', data)
+  return http.get<MonthTask[]>('/task/getUserTasksForMonth',  data)
 }

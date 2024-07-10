@@ -7,6 +7,7 @@ import {
   GetUserPermissionsDto,
   UpdateUserDto,
   GetUserDto,
+  RefreshTokenDto
 } from './dto/user.dto';
 import { getAllVo, RegisterUserVo } from './vo/user.vo';
 import { RequireLogin, SystemInfo } from 'src/custom.decorator';
@@ -37,6 +38,11 @@ export class UserController {
   @Post('/login')
   async login(@Body() data: LoginDto) {
     return await this.userService.login(data);
+  }
+
+  @Post('/refreshToken')
+  async refreshToken(@Body() data: RefreshTokenDto) {
+    return await this.userService.refreshToken(data.refreshToken);
   }
 
   @ApiResponse({ status: 200, type: getAllVo })

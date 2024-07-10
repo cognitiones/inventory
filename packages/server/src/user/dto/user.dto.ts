@@ -71,6 +71,10 @@ export class GetUserPermissionsDto {
   userId: number;
 }
 
+export class RefreshTokenDto {
+  refreshToken: string;
+}
+
 export class UpdateUserDto {
   @IsNumber({}, { message: 'userId 不能为空' })
   @Type(() => Number)

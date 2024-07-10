@@ -11,6 +11,7 @@
     <view class="calendar">
       <wu-calendar
         @change="calendarChange"
+        @monthSwitch="monthSwitch"
         :selected="selected"
         type="week"
         :itemHeight="50"
@@ -24,7 +25,7 @@
         v-for="(item, index) in list"
         :key="index"
       >
-        <wd-checkbox v-model="item.completed" disabled shape="square">{{ item.title }}</wd-checkbox>
+        <wd-checkbox v-model="item.completed" shape="square" @change="handleChange(item)">{{ item.title }}</wd-checkbox>
       </view>
     </view>
   </view>
@@ -32,17 +33,22 @@
 <script lang="ts" setup>
 // 获取屏幕边界到安全区域距离
 import { TaskItem } from '../index/types/index'
-import { getUserTasksForMonth, MonthTask } from '@/service/task'
+import { getUserTasksForMonth, MonthTask, completeTask } from '@/service/task'
 import { startOfToday } from '@/utils/days'
 
 const list = ref<TaskItem[]>([])
 const selected = ref([])
+
 const {
   loading,
   error,
   data: monthTasks,
   run: getMonthTasks,
-} = useRequest<MonthTask[]>(() => getUserTasksForMonth({}))
+} = useRequest<MonthTask[]>(getUserTasksForMonth)
+
+const handleChange = async (task: TaskItem)=>{
+  const res = await completeTask({ taskId: task.id, completed: task.completed })
+}
 
 const calendarChange = (e) => {
   let fulldate = e.fulldate
@@ -54,6 +60,11 @@ const calendarChange = (e) => {
   })
 
   list.value = monthTask ? monthTask.data : []
+}
+
+const monthSwitch = ({month, year}) => {
+
+  getMonthTasks({ month, year })
 }
 
 const getCalendarData = (data: MonthTask[]) => {

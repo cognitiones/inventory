@@ -12,7 +12,7 @@
     <!-- TODO: popup 弹层取消时 加一个过渡动画 -->
     <view :style="{ paddingTop: safeAreaInsets?.top + 11 + 'px' }" class="title">今天</view>
     <view class="list">
-      <view>
+      <view v-if="list?.length !== 0">
         <view class="list-items" v-for="(item, index) in list" :key="index">
           <view class="list-header">
             <view>{{ item.title }}</view>
@@ -41,6 +41,11 @@
             </view>
           </view>
         </view>
+      </view>
+
+      <view v-else class="text-center mt-20">
+        <view class="text-5 mb-3">无任务</view>
+        <view class="text-5" @click="handleInsert()">去添加</view>
       </view>
     </view>
 

@@ -13,9 +13,21 @@ import { HttpService } from '@nestjs/axios';
 import { ListService } from 'src/list/list.service';
 // import { UserService } from 'src/user/user.service';
 import { ConfigService } from '@nestjs/config';
-import { catchError, firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom, generate } from 'rxjs';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { startOfDay, endOfDay, startOfMonth, endOfMonth } from 'date-fns';
+import {
+  startOfDay,
+  endOfDay,
+  startOfMonth,
+  endOfMonth,
+  addWeeks,
+  isBefore,
+  isSameMonth,
+  addDays,
+  addMonths,
+  isSameDay,
+  isAfter,
+} from 'date-fns';
 import { TestingModule } from '@nestjs/testing';
 import { AxiosError } from 'axios';
 
@@ -29,6 +41,56 @@ interface ExtendedTask extends Task {
       };
     };
   };
+}
+
+interface RepeatStrategy {
+  generateDates(task: Task, startDate: Date, endDate: Date): Task[];
+}
+
+abstract class BaseRepeatStrategy implements RepeatStrategy {
+  abstract addInterval(date: Date, interval: number): Date;
+
+  generateDates(task: Task, startDate: Date, endDate: Date): Task[] {
+    const tasks: Task[] = [];
+    let date = task.dueDate;
+    let reminderDate = task.reminderDate;
+
+    while (isBefore(date, endDate) || isSameMonth(date, endDate)) {
+      if (isBefore(startDate, date) || isSameMonth(startDate, date)) {
+        tasks.push({ ...task, dueDate: date, reminderDate: reminderDate });
+      }
+      date = this.addInterval(date, 1);
+      reminderDate = this.addInterval(reminderDate, 1);
+    }
+    return tasks;
+  }
+}
+
+class DailyRepeatStrategy extends BaseRepeatStrategy {
+  addInterval(date: Date, interval: number): Date {
+    return addDays(date, interval);
+  }
+}
+
+class WeeklyRepeatStrategy extends BaseRepeatStrategy {
+  addInterval(date: Date, interval: number): Date {
+    return addWeeks(date, interval);
+  }
+}
+
+class MonthlyRepeatStrategy extends BaseRepeatStrategy {
+  addInterval(date: Date, interval: number): Date {
+    return addMonths(date, interval);
+  }
+}
+
+class NoneRepeatStrategy implements RepeatStrategy {
+  generateDates(task: Task, startDate: Date, endDate: Date): Task[] {
+    if (isBefore(task.dueDate, endDate) || isSameMonth(task.dueDate, endDate)) {
+      return [task];
+    }
+    return [];
+  }
 }
 
 @Injectable()
@@ -47,7 +109,6 @@ export class TaskService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async getPushTasks() {
-
     const now = new Date();
     const tasks = await this.prisma.task.findMany({
       where: {
@@ -95,8 +156,7 @@ export class TaskService {
     }
     // return
     const uniCloud_url = this.configService.get('uniCloud_url');
-   
-    
+
     let msg = {
       clientid: [clientid],
       title: title,
@@ -105,7 +165,7 @@ export class TaskService {
       //     "text": "第一条 payload - text"
       // }
     };
-    console.log(msg.clientid,'1');
+    console.log(msg.clientid, '1');
     function toQueryString(data) {
       return '?' + new URLSearchParams(data).toString();
     }
@@ -119,8 +179,8 @@ export class TaskService {
         }),
       ),
     );
-    console.log(data,'data');
-    
+    console.log(data, 'data');
+
     if (data.errCode == 0) {
       await this.prisma.task.update({
         where: {
@@ -153,15 +213,10 @@ export class TaskService {
 
   async getUserTasksForMonth(userId: number, data: GetUserTasksForMonthDto) {
     let startDate, endDate;
-    if (data.month) {
-      const currentDate = new Date();
-      currentDate.setMonth(data.month - 1); // 月份从0开始，1对应1月，2对应2月，以此类推
-      currentDate.setDate(1); // 将日期设置为当月的第一天
-
+    if (data.month && data.year) {
+      const currentDate = new Date(data.year, data.month - 1, 1);
       startDate = startOfMonth(currentDate);
       endDate = endOfMonth(currentDate);
-
-      console.log(6, startDate, endDate);
     } else {
       startDate = startOfMonth(new Date());
       endDate = endOfMonth(new Date());
@@ -175,27 +230,42 @@ export class TaskService {
         list: {
           userId: userId,
         },
-        dueDate: {
-          gte: startDate,
-          lte: endDate,
-        },
+        OR: [
+          {
+            dueDate: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+          {
+            repeat: {
+              in: ['DAILY', 'WEEKLY', 'MONTHLY'],
+            },
+          },
+        ],
       },
       orderBy: {
         createdAt: 'asc',
       },
     });
-    console.log(tasks,'月份');
 
-    tasks.forEach((task)=>{
-      if(task.repeat == "WEEKLY"){
-        //生成本月每周的任务
-        
-      }
-    })
+    const allTasks = [];
+    const repeatStrategies = {
+      DAILY: new DailyRepeatStrategy(),
+      WEEKLY: new WeeklyRepeatStrategy(),
+      MONTHLY: new MonthlyRepeatStrategy(),
+      NONE: new NoneRepeatStrategy(),
+    };
+
+    tasks.forEach((task) => {
+      const strategy = repeatStrategies[task.repeat] || repeatStrategies.NONE;
+      const generatedTasks = strategy.generateDates(task, startDate, endDate);
+      allTasks.push(...generatedTasks);
+    });
 
     // 按天排列任务
     const tasksByDay = Object.values(
-      tasks.reduce((acc, task) => {
+      allTasks.reduce((acc, task) => {
         const day = task.dueDate.getDate();
         let month = task.dueDate.getMonth() + 1;
         const year = task.dueDate.getFullYear();
@@ -232,6 +302,9 @@ export class TaskService {
             dueDate: null,
           },
         ],
+        repeat: {
+          in: ['DAILY', 'WEEKLY', 'MONTHLY', 'NONE']
+        }
       },
       include: {
         list: true,
@@ -243,8 +316,35 @@ export class TaskService {
       },
     });
 
+    const repeatStrategies = {
+      NONE: (task: Task) => isSameDay(task.dueDate, new Date()),
+      DAILY: (task: Task)=> isAfter(new Date(), task.dueDate) || isSameDay(new Date(), task.dueDate),
+      WEEKLY: (task: Task) => {
+        let nextDueDate = task.dueDate
+        while(isBefore(startOfDay(nextDueDate), startOfDay(new Date()))){
+          nextDueDate = addWeeks(nextDueDate, 1)
+        }
+
+        return isSameDay(nextDueDate, new Date())
+      },
+      MONTHLY: (task: Task)=>{
+        let nextDueDate = task.dueDate
+        while(isBefore(startOfDay(nextDueDate), startOfDay(new Date()))){
+          nextDueDate = addMonths(nextDueDate, 1)
+        }
+
+        return isSameDay(nextDueDate, new Date())
+      }
+    }
+
+    const filteredTasks = tasks.filter((task)=>{
+      const strategy = repeatStrategies[task.repeat]
+      return strategy ? strategy(task) : false
+    })
+
     const result = [];
-    tasks.forEach((el) => {
+
+    filteredTasks.forEach((el) => {
       result.push({
         ...el,
         tags: el.tags.map((tags) => tags.tag),
