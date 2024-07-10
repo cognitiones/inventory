@@ -30,4 +30,4 @@ RUN npm install --production
 EXPOSE 3005
 
 # 添加数据库迁移命令
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run start:prod"]
