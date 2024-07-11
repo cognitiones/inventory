@@ -14,9 +14,10 @@
         image-mode="aspectFill"
         :limit="1"
         action="/minio/uploadFile"
-        @change="handleChange"
         @success="handleUploadSuccess"
-        @fail="handleError"
+        @progress="handleProgress"
+        @error="handleFail"
+        @change="handleChange"
       ></wd-upload>
 
       <view>姓名：{{ user.name }}</view>
@@ -41,26 +42,24 @@ const clientid = ref()
 
 const fileList = ref<any[]>([])
 
-function handleChange({ fileList: files }) {
-  console.log('change', files);
-
-  fileList.value = files
-}
-
-const handleError = (event) => {
-  console.log(event, 'ev')
-}
-
-const handleCid = async (cid)=>{
+const handleCid = async (cid) => {
   const data: UpdateUserDto = {
     id: userId,
     app: {
       clientId: cid,
-    }
+    },
   }
 
   const res = await updateUser(data)
   console.log(res, '设备号')
+}
+
+const handleChange = ({ fileList }) => {
+  fileList.value = fileList
+}
+
+const handleFail = ({ error, file, formData }) => {
+  console.log(error, 'error')
 }
 
 const uploadUser = async () => {
@@ -72,13 +71,29 @@ const uploadUser = async () => {
     // },
   }
   const res = await updateUser(data)
-  console.log(res, '上传结果')
+  return res
 }
 
-const handleUploadSuccess = ({ file }) => {
+const handleUploadSuccess =  ({ file }) => {
   console.log(file.response, 'event')
   user.value.headPic = file.response
-  uploadUser()
+  // fileList.value = []
+
+  const res = uploadUser()
+  // console.log('上传结果', res)
+
+  // if (res.code === 200) {
+  //   fileList.value = [
+  //     {
+  //       url: imgUrl + file.response,
+  //     },
+  //   ]
+  // }
+}
+
+const handleProgress = ({ response, file })=>{
+  console.log(file,11);
+
 }
 
 // #ifdef APP-PLUS
@@ -119,7 +134,7 @@ onShow(() => {
 .my {
   box-sizing: border-box;
   padding: 20rpx;
-  margin-top: 20rpx;
+
 }
 
 .upload {

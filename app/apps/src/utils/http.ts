@@ -25,6 +25,7 @@ export const http = <T>(options: CustomRequestOptions) => {
       // 响应成功
       async success(result) {
         let res: IResData<T> = result.data as IResData<T>
+
         // 状态码 2xx，参考 axios 的设计
         if (res.code >= 200 && res.code < 300) {
           // 2.1 提取核心数据 res.data
@@ -37,6 +38,8 @@ export const http = <T>(options: CustomRequestOptions) => {
               uni.navigateTo({ url: '/pages/user/login' })
             }
             reject(res)
+
+            return
           }
 
           //重新请求

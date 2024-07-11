@@ -85,10 +85,10 @@
     "useRequest": true,
     "useSlots": true,
     "useUpload": true,
+    "useUrls": true,
     "watch": true,
     "watchEffect": true,
     "watchPostEffect": true,
-    "watchSyncEffect": true,
-    "useUrls": true
+    "watchSyncEffect": true
   }
 }
