@@ -22,6 +22,7 @@
 
       <view>姓名：{{ user.name }}</view>
       <view>邮箱：{{ user.email }}</view>
+
       // #ifdef APP-PLUS
       <view @click="handleCid(clientid)">设备号：{{ clientid }}</view>
       // #endif
@@ -30,6 +31,7 @@
 </template>
 <script lang="ts" setup>
 import { getUser, updateUser, UpdateUserDto, User } from '@/service/user'
+
 const imgUrl = useUrls('imgUrl')
 const userId = uni.getStorageSync('userId')
 const { loading, error, data, run } = useRequest(() => getUser({ userId }), { immediate: false })
@@ -38,6 +40,7 @@ const user = ref<User>({
   email: '',
   headPic: '',
 })
+
 const clientid = ref()
 
 const fileList = ref<any[]>([])
@@ -51,7 +54,6 @@ const handleCid = async (cid) => {
   }
 
   const res = await updateUser(data)
-  console.log(res, '设备号')
 }
 
 const handleChange = ({ fileList }) => {
