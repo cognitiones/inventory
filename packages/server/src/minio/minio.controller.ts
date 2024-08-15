@@ -11,6 +11,11 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as Minio from 'minio';
 
+import {
+  ApiTags,
+} from '@nestjs/swagger';
+
+@ApiTags('oss模块')
 @Controller('minio')
 export class MinioController {
   @Inject('MINIO_CLIENT')

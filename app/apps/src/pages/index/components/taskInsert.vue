@@ -29,13 +29,13 @@
         <image
           @click="handleDate"
           class="dateBtn itemBtn"
-          src="http://cdn.chen-zeqi.cn//date.png"
+          src="http://cdn.chen-zeqi.cn/date.png"
         ></image>
 
         <view class="confirmBtn itemBtn">
           <image
             @click="handleInsert"
-            src="http://cdn.chen-zeqi.cn//confirm.png"
+            src="http://cdn.chen-zeqi.cn/confirm.png"
             class="confirmIcon"
           ></image>
         </view>

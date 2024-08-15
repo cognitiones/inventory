@@ -25,6 +25,7 @@ export const http = <T>(options: CustomRequestOptions) => {
       // 响应成功
       async success(result) {
         let res: IResData<T> = result.data as IResData<T>
+        console.log(res,'res');
 
         // 状态码 2xx，参考 axios 的设计
         if (res.code >= 200 && res.code < 300) {
@@ -49,6 +50,7 @@ export const http = <T>(options: CustomRequestOptions) => {
           // userStore.clearUserInfo()
           // uni.navigateTo({ url: '/pages/user/login' })
         } else if (res.code === 402) {
+          uni.navigateTo({ url: '/pages/user/login' })
           reject(res)
         } else {
           // 其他错误 -> 根据后端错误信息轻提示

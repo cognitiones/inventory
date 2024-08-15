@@ -10,6 +10,7 @@ export interface MonthTask {
 export interface CompleteTaskDto {
   taskId: number
   completed: boolean
+  date?: string;
 }
 
 export interface DeleteTaskDto {

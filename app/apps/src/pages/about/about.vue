@@ -38,6 +38,7 @@ import { startOfToday } from '@/utils/days'
 
 const list = ref<TaskItem[]>([])
 const selected = ref([])
+const fulldate = ref("")
 
 const {
   loading,
@@ -47,14 +48,15 @@ const {
 } = useRequest<MonthTask[]>(getUserTasksForMonth)
 
 const handleChange = async (task: TaskItem)=>{
-  const res = await completeTask({ taskId: task.id, completed: task.completed })
+  const res = await completeTask({ taskId: task.id, completed: task.completed, date: fulldate.value })
 }
 
 const calendarChange = (e) => {
-  let fulldate = e.fulldate
+
+  fulldate.value = e.fulldate
 
   const monthTask = monthTasks.value.find((monthTask: MonthTask) => {
-    if (monthTask.date === fulldate) {
+    if (monthTask.date === fulldate.value) {
       return monthTask.data
     }
   })

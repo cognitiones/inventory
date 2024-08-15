@@ -103,20 +103,31 @@ model List {
 }
 
 model Task {
-  id           Int         @id @default(autoincrement())
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  type         TaskType?   @default(INITIAL)
+  id           Int              @id @default(autoincrement())
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  type         TaskType?        @default(INITIAL)
   title        String
   description  String?
-  completed    Boolean     @default(false)
+  completed    Boolean          @default(false)
   dueDate      DateTime?
   reminderDate DateTime?
-  isReminded   Boolean     @default(false)
+  isReminded   Boolean          @default(false)
   repeat       RepeatType?
-  list         List        @relation(fields: [listId], references: [id])
+  list         List             @relation(fields: [listId], references: [id])
   listId       Int
   tags         TaskTags[]
+  occurrences  TaskOccurrence[]
+}
+
+model TaskOccurrence {
+  id             Int      @id @default(autoincrement())
+  taskId         Int
+  occurrenceDate DateTime
+  completed      Boolean
+  task           Task     @relation(fields: [taskId], references: [id])
+
+  @@unique([taskId, occurrenceDate])
 }
 
 model Tag {

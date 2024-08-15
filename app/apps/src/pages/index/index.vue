@@ -42,35 +42,32 @@
           </view>
         </view>
       </view>
-
-      <view v-else class="text-center mt-20">
-        <view class="text-5 mb-3">无任务</view>
-        <view class="text-5" @click="handleInsert()">去添加</view>
-      </view>
     </view>
 
-    <!-- insert Icon  -->
-    <view class="fab" @click="handleInsert()">
-      <image src="http://cdn.chen-zeqi.cn/insert.png" class="fab-btn"></image>
-      <!-- <wd-icon name="add-circle fab-btn" size="100rpx"></wd-icon> -->
-    </view>
 
-    <!-- detail popup -->
-    <TaskDetail ref="TaskDetailRef" @getTodayList="run"></TaskDetail>
+  <!-- detail popup -->
+  <TaskDetail ref="TaskDetailRef" @getTodayList="run"></TaskDetail>
 
-    <!-- insert popup -->
-    <TaskInsert
-      v-if="insertDialogState"
-      ref="TaskInsertRef"
-      @change="run"
-      @close="insertDialogState = false"
-    ></TaskInsert>
+  <!-- insert popup -->
+  <TaskInsert
+    v-if="insertDialogState"
+    ref="TaskInsertRef"
+    @change="run"
+    @close="insertDialogState = false"
+  ></TaskInsert>
   </view>
   <view v-else>
     <view class="login">
       <view>需要登录才可以查看更多信息哦</view>
       <view class="login-btn" @click="handleLogin">去登录</view>
     </view>
+  </view>
+
+
+  <!-- insert Icon  -->
+  <view class="fab" @click="handleInsert()">
+    <image src="http://cdn.chen-zeqi.cn/insert.png" class="fab-btn"></image>
+    <!-- <wd-icon name="add-circle fab-btn" size="100rpx"></wd-icon> -->
   </view>
 </template>
 

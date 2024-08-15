@@ -198,17 +198,39 @@ export class TaskService {
 
   //完成任务
   async completeTask(data: CompleteTaskDto) {
-    return this.prisma.task.update({
-      where: {
-        id: data.taskId,
-      },
-      data: {
-        completed: data.completed,
-      },
-      select: {
-        id: true,
-      },
+    const task = await this.prisma.task.findUnique({
+      where: { id: data.taskId },
     });
+
+    if (task.repeat !== 'NONE') {
+      const occurrenceDate = data.date ? new Date(data.date) : new Date();
+
+      // 对于重复任务,更新或创建一个任务发生记录
+      await this.prisma.taskOccurrence.upsert({
+        where: {
+          taskId_occurrenceDate: {
+            taskId: data.taskId,
+            occurrenceDate: startOfDay(occurrenceDate), // 使用当天的开始时间
+          },
+        },
+        update: {
+          completed: data.completed,
+        },
+        create: {
+          taskId: data.taskId,
+          occurrenceDate: startOfDay(occurrenceDate),
+          completed: data.completed,
+        },
+      });
+      return { id: data.taskId };
+    } else {
+      // 对于非重复任务,直接更新任务状态
+      return this.prisma.task.update({
+        where: { id: data.taskId },
+        data: { completed: data.completed },
+        select: { id: true },
+      });
+    }
   }
 
   async getUserTasksForMonth(userId: number, data: GetUserTasksForMonthDto) {
@@ -244,6 +266,16 @@ export class TaskService {
           },
         ],
       },
+      include: {
+        occurrences: {
+          where: {
+            occurrenceDate: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        },
+      },
       orderBy: {
         createdAt: 'asc',
       },
@@ -260,6 +292,14 @@ export class TaskService {
     tasks.forEach((task) => {
       const strategy = repeatStrategies[task.repeat] || repeatStrategies.NONE;
       const generatedTasks = strategy.generateDates(task, startDate, endDate);
+
+      generatedTasks.forEach((generatedTask) => {
+        const occurrence = task.occurrences.find((occ) =>
+          isSameDay(occ.occurrenceDate, generatedTask.dueDate),
+        );
+        generatedTask.completed = occurrence ? occurrence.completed : false;
+      });
+
       allTasks.push(...generatedTasks);
     });
 
@@ -303,8 +343,8 @@ export class TaskService {
           },
         ],
         repeat: {
-          in: ['DAILY', 'WEEKLY', 'MONTHLY', 'NONE']
-        }
+          in: ['DAILY', 'WEEKLY', 'MONTHLY', 'NONE'],
+        },
       },
       include: {
         list: true,
@@ -313,42 +353,60 @@ export class TaskService {
             tag: true,
           },
         },
+        occurrences: {
+          where: {
+            occurrenceDate: {
+              gte: todayStart,
+              lte: todayEnd,
+            },
+          },
+        },
       },
     });
 
     const repeatStrategies = {
       NONE: (task: Task) => isSameDay(task.dueDate, new Date()),
-      DAILY: (task: Task)=> isAfter(new Date(), task.dueDate) || isSameDay(new Date(), task.dueDate),
+      DAILY: (task: Task) =>
+        isAfter(new Date(), task.dueDate) ||
+        isSameDay(new Date(), task.dueDate),
       WEEKLY: (task: Task) => {
-        let nextDueDate = task.dueDate
-        while(isBefore(startOfDay(nextDueDate), startOfDay(new Date()))){
-          nextDueDate = addWeeks(nextDueDate, 1)
+        let nextDueDate = task.dueDate;
+        while (isBefore(startOfDay(nextDueDate), startOfDay(new Date()))) {
+          nextDueDate = addWeeks(nextDueDate, 1);
         }
 
-        return isSameDay(nextDueDate, new Date())
+        return isSameDay(nextDueDate, new Date());
       },
-      MONTHLY: (task: Task)=>{
-        let nextDueDate = task.dueDate
-        while(isBefore(startOfDay(nextDueDate), startOfDay(new Date()))){
-          nextDueDate = addMonths(nextDueDate, 1)
+      MONTHLY: (task: Task) => {
+        let nextDueDate = task.dueDate;
+        while (isBefore(startOfDay(nextDueDate), startOfDay(new Date()))) {
+          nextDueDate = addMonths(nextDueDate, 1);
         }
 
-        return isSameDay(nextDueDate, new Date())
-      }
-    }
+        return isSameDay(nextDueDate, new Date());
+      },
+    };
 
-    const filteredTasks = tasks.filter((task)=>{
-      const strategy = repeatStrategies[task.repeat]
-      return strategy ? strategy(task) : false
-    })
+    const filteredTasks = tasks.filter((task) => {
+      const strategy = repeatStrategies[task.repeat];
+      return strategy ? strategy(task) : false;
+    });
 
-    const result = [];
+    const result = filteredTasks.map((task) => {
+      const today = new Date();
+      const todayOccurrence = task.occurrences.find((occ) =>
+        isSameDay(occ.occurrenceDate, today),
+      );
 
-    filteredTasks.forEach((el) => {
-      result.push({
-        ...el,
-        tags: el.tags.map((tags) => tags.tag),
-      });
+      return {
+        ...task,
+        tags: task.tags.map((tags) => tags.tag),
+        completed: todayOccurrence
+          ? todayOccurrence.completed
+          : task.repeat === 'NONE'
+            ? task.completed
+            : false,
+      };
     });
 
     return result;

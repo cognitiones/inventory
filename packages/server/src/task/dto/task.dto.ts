@@ -79,6 +79,8 @@ export class CompleteTaskDto {
     message: 'completed 不能为空',
   })
   completed: boolean;
+
+  date?: string; 
 }
 
 export class DeleteTaskDto {

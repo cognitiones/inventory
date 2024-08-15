@@ -62,6 +62,16 @@ export default ({ command, mode }) => {
       UniManifest(),
       // UniXXX 需要在 Uni 之前引入
       Uni(),
+      {
+        // 自定义插件禁用vite:vue插件的devToolsEnabled，强制编译 vue 模板时 inline 为 true
+        name: 'fix-vite-plugin-vue',
+        configResolved(config) {
+          const plugin = config.plugins.find((p) => p.name === 'vite:vue')
+          if (plugin && plugin.api && plugin.api.options) {
+            plugin.api.options.devToolsEnabled = false
+          }
+        },
+      },
       UnoCSS(),
       AutoImport({
         imports: ['vue', 'uni-app'],
